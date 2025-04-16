@@ -1,3 +1,37 @@
+Metadata-Version: 2.4
+Name: gpt-subtrans
+Version: 1.0.9
+Summary: GPT-Subtrans is an open source subtitle translator that uses LLMs as a translation service. It can translate subtitles between any language pairs supported by the language model.
+Author: machinewrapped
+License: MIT
+Project-URL: Homepage, https://github.com/machinewrapped/gpt-subtrans
+Project-URL: Repository, https://github.com/machinewrapped/gpt-subtrans
+Project-URL: Bug Tracker, https://github.com/machinewrapped/gpt-subtrans/issues
+Classifier: Programming Language :: Python :: 3
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Topic :: Multimedia :: Video
+Classifier: Topic :: Text Processing :: Linguistic
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: End Users/Desktop
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Requires-Dist: python-dotenv
+Requires-Dist: srt
+Requires-Dist: regex
+Requires-Dist: appdirs
+Requires-Dist: events
+Requires-Dist: requests
+Requires-Dist: setuptools
+Requires-Dist: httpx[socks]
+Requires-Dist: openai
+Requires-Dist: google-genai
+Requires-Dist: anthropic
+Requires-Dist: boto3
+Requires-Dist: mistralai
+Dynamic: license-file
+
 # GPT-Subtrans
 GPT-Subtrans is an open source subtitle translator that uses LLMs as a translation service. It can translate subtitles between any language pairs supported by the language model.
 

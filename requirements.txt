@@ -4,9 +4,8 @@ regex
 appdirs
 events
 requests
-darkdetect
+# darkdetect # Removed GUI dependency
 setuptools
-pyside6
+# pyside6 # Removed GUI dependency
 httpx
 httpx[socks]
-

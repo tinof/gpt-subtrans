@@ -1,0 +1,10 @@
+[console_scripts]
+azure-subtrans = scripts.azure_subtrans:main
+batch-process = scripts.batch_process:main
+bedrock-subtrans = scripts.bedrock_subtrans:main
+claude-subtrans = scripts.claude_subtrans:main
+deepseek-subtrans = scripts.deepseek_subtrans:main
+gemini-subtrans = PySubtitle.cli:gemini_main
+gpt-subtrans = scripts.gpt_subtrans:main
+llm-subtrans = scripts.llm_subtrans:main
+mistral-subtrans = scripts.mistral_subtrans:main

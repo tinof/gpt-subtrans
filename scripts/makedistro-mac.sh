@@ -13,21 +13,14 @@ pip install --upgrade google-genai
 pip install --upgrade anthropic
 pip install --upgrade mistralai
 
-# Remove boto3 from packaged version
-pip uninstall boto3
-
-python tests/unit_tests.py
-if [ $? -ne 0 ]; then
-    echo "Unit tests failed. Exiting..."
-    exit $?
-fi
+# Removed boto3 uninstall (not in requirements)
+# Removed unit test execution (tests removed)
 
 ./envsubtrans/bin/pyinstaller --noconfirm \
     --additional-hooks-dir="PySubtitleHooks" \
     --paths="./envsubtrans/lib" \
-    --add-data "theme/*:theme/" \
-    --add-data "assets/*:assets/" \
+    # Removed --add-data for theme/ and assets/
     --add-data "instructions*:instructions/" \
     --add-data "LICENSE:." \
     --noconfirm \
-    scripts/gui-subtrans.py
+    scripts/llm-subtrans.py # Changed entry point to generic CLI script

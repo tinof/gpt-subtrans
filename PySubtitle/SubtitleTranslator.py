@@ -18,6 +18,7 @@ from PySubtitle.SubtitleError import NoProviderError, NoTranslationError, Provid
 from PySubtitle.Helpers import FormatErrorMessages
 from PySubtitle.SubtitleFile import SubtitleFile
 from PySubtitle.SubtitleScene import SubtitleScene, UnbatchScenes
+from PySubtitle.Providers.Gemini.GeminiClient import GeminiContextLimitError # Import the specific error
 from PySubtitle.TranslationEvents import TranslationEvents
 from PySubtitle.TranslationPrompt import TranslationPrompt
 from PySubtitle.TranslationProvider import TranslationProvider
@@ -218,31 +219,83 @@ class SubtitleTranslator:
         if self.preview:
             return
 
-        # Ask the client to do the translation
-        translation : Translation = self.client.RequestTranslation(batch.prompt)
+        try:
+            # Ask the client to do the translation
+            translation : Translation = self.client.RequestTranslation(batch.prompt)
 
-        if (translation and translation.reached_token_limit) and not self.aborted:
-            # Try again without the context to keep the tokens down
-            # TODO: better to split the batch into smaller chunks
-            logging.warning("Hit API token limit, retrying batch without context...")
-            batch.prompt.GenerateMessages(self.instructions.instructions, batch.originals, {})
+        except GeminiContextLimitError as e:
+            if len(originals) > 1:
+                logging.warning(f"Context limit error for batch {batch.scene}-{batch.number}: {e}. Attempting to split.")
+                # Split the batch and retry
+                midpoint = len(originals) // 2
+                originals1 = originals[:midpoint]
+                originals2 = originals[midpoint:]
 
-            translation = self.client.RequestTranslation(batch.prompt)
+                # Create temporary sub-batches (or adapt logic if batches can be nested/split formally)
+                # This is a simplified retry, assuming context doesn't drastically change between halves
+                logging.info(f"Splitting batch {batch.scene}-{batch.number} into {len(originals1)} + {len(originals2)} lines")
+
+                try:
+                    # Translate first half
+                    prompt1 = self.client.BuildTranslationPrompt(self.user_prompt, instructions, originals1, context)
+                    translation1 = self._execute_translation_request(prompt1)
+                    if not translation1: raise TranslationError("First half failed after split")
+                    self.ProcessBatchTranslation(batch, translation1, [line.number for line in originals1]) # Process partial results
+
+                    # Update context slightly if possible (e.g., summary from first half)
+                    temp_context = deepcopy(context)
+                    temp_context['summary'] = self._get_best_summary([translation1.summary, context.get('summary')])
+
+                    # Translate second half
+                    prompt2 = self.client.BuildTranslationPrompt(self.user_prompt, instructions, originals2, temp_context)
+                    translation2 = self._execute_translation_request(prompt2)
+                    if not translation2: raise TranslationError("Second half failed after split")
+                    self.ProcessBatchTranslation(batch, translation2, [line.number for line in originals2]) # Process partial results
+
+                    # Combine results (ProcessBatchTranslation modifies batch.translated in place)
+                    # Combine summaries?
+                    final_summary = self._get_best_summary([translation1.summary, translation2.summary, context.get('summary')])
+                    batch.translation.summary = final_summary # Update the main batch's translation summary
+                    # Note: Other translation metadata (tokens, etc.) will be from the *last* successful call (translation2)
+                    # This might need more sophisticated merging if exact token counts are critical later.
+                    logging.info(f"Successfully translated split batch {batch.scene}-{batch.number}")
+                    translation = batch.translation # Use the updated batch translation object
+
+                except Exception as split_e:
+                    logging.error(f"Error translating split batch {batch.scene}-{batch.number}: {split_e}")
+                    raise TranslationImpossibleError(f"Failed to translate batch {batch.scene}-{batch.number} even after splitting: {split_e}") from split_e
+
+            else:
+                logging.error(f"Context limit error on a single-line batch {batch.scene}-{batch.number}: {e}. Cannot split further.")
+                raise TranslationImpossibleError(f"Single line is too large for model context limit: {originals[0].number} - {originals[0].text}") from e
+
+        # This check might be redundant now due to the pre-check, but keep for safety?
+        # Or remove if GeminiContextLimitError handles all cases. Let's remove the old check.
+        # if (translation and translation.reached_token_limit) and not self.aborted:
+        #     logging.warning("Hit API token limit (post-request check)... this shouldn't happen often with pre-checks.")
+        #     # Decide if retry logic is still needed here. Probably not.
+        #     raise TranslationError(f"Token limit reached unexpectedly for batch {batch.scene}-{batch.number}")
 
         if not self.aborted:
             if not translation:
+                # This case might be hit if _execute_translation_request returns None due to abortion during retry
+                if self.aborted: return
                 raise TranslationError(f"Unable to translate scene {batch.scene} batch {batch.number}")
 
             # Process the response
             self.ProcessBatchTranslation(batch, translation, line_numbers)
 
-            # Consider retrying if there were errors
+            # Consider retrying for *other* errors if enabled
             if batch.errors and self.retry_on_error:
-                logging.warning(f"Scene {batch.scene} batch {batch.number} failed validation, requesting retranslation")
-                self.RequestRetranslation(batch, line_numbers=line_numbers, context=context)
+                # Ensure we don't retry context limit errors here if they somehow slipped through
+                if not any(isinstance(err, GeminiContextLimitError) for err in batch.errors):
+                    logging.warning(f"Scene {batch.scene} batch {batch.number} failed validation ({len(batch.errors)} errors), requesting retranslation")
+                    self.RequestRetranslation(batch, line_numbers=line_numbers, context=context)
+                else:
+                     logging.warning(f"Scene {batch.scene} batch {batch.number} had context limit errors, skipping standard retry.")
 
             # Update the context, unless it's a retranslation pass
-            if not self.retranslate and not self.aborted:
+            if not self.retranslate and not self.aborted and translation:
                 context['summary'] = self._get_best_summary([translation.summary, batch.summary])
                 context['scene'] = self._get_best_summary([translation.scene, context.get('scene')])
                 context['synopsis'] = translation.synopsis or context.get('synopsis', "")
@@ -313,23 +366,45 @@ class SubtitleTranslator:
             batch.AddContext('untranslated_lines', [f"{item.number}. {item.text}" for item in batch.untranslated])
 
         # Apply any word/phrase substitutions to the translation
-        replacements = batch.PerformOutputSubstitutions(self.substitutions)
+        # Ensure batch.translated is not None before proceeding
+        if batch.translated:
+            replacements = batch.PerformOutputSubstitutions(self.substitutions)
+            if replacements:
+                replaced = [f"{k} -> {v}" for k,v in replacements.items()]
+                logging.info(f"Made substitutions in output:\n{linesep.join(replaced)}")
 
-        if replacements:
-            replaced = [f"{k} -> {v}" for k,v in replacements.items()]
-            logging.info(f"Made substitutions in output:\n{linesep.join(replaced)}")
-
-        # Perform substitutions on the output
-        translation.PerformSubstitutions(self.substitutions)
+        # Perform substitutions on the raw translation text as well?
+        # translation.PerformSubstitutions(self.substitutions) # This might modify the raw text used for retries
 
         # Post-process the translation
-        if self.postprocessor:
+        if self.postprocessor and batch.translated:
             batch.translated = self.postprocessor.PostprocessSubtitles(batch.translated)
 
-        logging.info(f"Scene {batch.scene} batch {batch.number}: {len(batch.translated or [])} lines and {len(batch.untranslated or [])} untranslated.")
+        logging.info(f"Scene {batch.scene} batch {batch.number}: {len(batch.translated or [])} lines translated, {len(batch.untranslated or [])} untranslated.")
 
         if translation.summary and translation.summary.strip():
             logging.info(f"Summary: {translation.summary}")
+
+    def _execute_translation_request(self, prompt: TranslationPrompt, temperature: float = None) -> Translation | None:
+        """ Helper function to encapsulate the API call """
+        try:
+            # Temperature override could be added here if needed for splits/retries
+            translation = self.client.RequestTranslation(prompt, temperature)
+            if self.aborted:
+                return None
+            return translation
+        except GeminiContextLimitError:
+            # Re-raise specifically if needed by caller, otherwise handle general errors
+            raise
+        except TranslationError as e:
+            # Log specific translation errors
+            logging.error(f"Translation request failed: {e}")
+            # Depending on severity, might return None or raise
+            return None # Allow caller to decide if this is fatal
+        except Exception as e:
+            # Catch unexpected errors during the request
+            logging.error(f"Unexpected error during translation request: {e}")
+            raise TranslationImpossibleError(f"API request failed unexpectedly: {e}") from e
 
     def RequestRetranslation(self, batch : SubtitleBatch, line_numbers : list[int] = None, context : dict = {}):
         """

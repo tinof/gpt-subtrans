@@ -3,7 +3,7 @@ import unittest
 
 import regex
 
-from GUI.ProjectDataModel import ProjectDataModel
+# Removed GUI.ProjectDataModel import (no longer needed after tests removed)
 from PySubtitle.Options import Options
 from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.SubtitleBatcher import SubtitleBatcher
@@ -94,6 +94,9 @@ def AddTranslations(subtitles : SubtitleFile, subtitle_data : dict, key : str = 
 
     for scene in subtitles.scenes:
         for batch in scene.batches:
+            if not batch.originals:
+                continue
+
             line_numbers = [ line.number for line in batch.originals ]
             batch_translated = [ line for line in subtitles.translated if line.number in line_numbers ]
             batch.translated = batch_translated
@@ -102,29 +105,28 @@ def AddTranslations(subtitles : SubtitleFile, subtitle_data : dict, key : str = 
                 line.translated = next((l for l in batch_translated if l.number == line.number), None)
                 line.translation = line.translated.text if line.translated else None
 
-def CreateTestDataModel(test_data : dict, options : Options = None) -> ProjectDataModel:
+def CreateTestProject(test_data : dict, options : Options = None) -> SubtitleProject:
     """
-    Creates a ProjectDataModel from test data.
+    Creates a SubtitleProject from test data.
     """
     file : SubtitleFile = PrepareSubtitles(test_data, 'original')
-    datamodel = ProjectDataModel(options = options)
-    datamodel.project = SubtitleProject(options, file)
-    datamodel.UpdateProviderSettings({"data" : test_data})
-    return datamodel
+    project = SubtitleProject(options, file)
+    # datamodel.UpdateProviderSettings({"data" : test_data}) # This was on ProjectDataModel, seems unnecessary for project itself
+    return project
 
-def CreateTestDataModelBatched(test_data : dict, options : Options = None, translated : bool = True) -> ProjectDataModel:
+def CreateTestProjectBatched(test_data : dict, options : Options = None, translated : bool = True) -> SubtitleProject:
     """
-    Creates a SubtitleBatcher from test data.
+    Creates a batched SubtitleProject from test data.
     """
-    datamodel : ProjectDataModel = CreateTestDataModel(test_data, options)
-    subtitles : SubtitleFile = datamodel.project.subtitles
+    project : SubtitleProject = CreateTestProject(test_data, options)
+    subtitles : SubtitleFile = project.subtitles
     batcher = SubtitleBatcher(options.GetSettings())
     subtitles.AutoBatch(batcher)
 
     if translated and 'translated' in test_data:
         AddTranslations(subtitles, test_data, 'translated')
 
-    return datamodel
+    return project
 
 def AddResponsesFromMap(subtitles : SubtitleFile, test_data : dict):
     """

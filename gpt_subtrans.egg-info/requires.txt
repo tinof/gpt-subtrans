@@ -1,0 +1,13 @@
+python-dotenv
+srt
+regex
+appdirs
+events
+requests
+setuptools
+httpx[socks]
+openai
+google-genai
+anthropic
+boto3
+mistralai

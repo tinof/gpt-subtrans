@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gpt-subtrans"
+version = "1.0.9"
+authors = [
+  { name="machinewrapped" }, # Email can be added if known
+]
+description = "GPT-Subtrans is an open source subtitle translator that uses LLMs as a translation service. It can translate subtitles between any language pairs supported by the language model."
+readme = "readme.md"
+license = { text = "MIT" }
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Text Processing :: Linguistic",
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+]
+dependencies = [
+    "python-dotenv",
+    "srt",
+    "regex",
+    "appdirs",
+    "events",
+    "requests",
+    "setuptools",
+    "httpx[socks]", # Includes base httpx and socks extra
+    # Add provider SDKs for pipx installation convenience
+    "openai",
+    "google-genai ", # It was "google-genai" on the original
+    "anthropic",
+    "boto3", # Bedrock SDK
+    "mistralai", # Mistral SDK
+]
+
+[project.urls]
+Homepage = "https://github.com/machinewrapped/gpt-subtrans"
+Repository = "https://github.com/machinewrapped/gpt-subtrans"
+"Bug Tracker" = "https://github.com/machinewrapped/gpt-subtrans/issues"
+
+[project.scripts]
+gpt-subtrans = "scripts.gpt_subtrans:main"
+azure-subtrans = "scripts.azure_subtrans:main"
+bedrock-subtrans = "scripts.bedrock_subtrans:main"
+claude-subtrans = "scripts.claude_subtrans:main"
+deepseek-subtrans = "scripts.deepseek_subtrans:main" # Keep others for now, only changing gemini
+gemini-subtrans = "PySubtitle.cli:gemini_main" # Point to the new location
+llm-subtrans = "scripts.llm_subtrans:main"
+mistral-subtrans = "scripts.mistral_subtrans:main"
+batch-process = "scripts.batch_process:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["PySubtitle*"] # Only include the main library package
+exclude = ["tests*", "PySubtitleHooks*", "scripts*"] # Exclude tests, hooks, and scripts directory from packaging
