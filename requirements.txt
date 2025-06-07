@@ -9,3 +9,4 @@ setuptools
 # pyside6 # Removed GUI dependency
 httpx
 httpx[socks]
+google-genai
