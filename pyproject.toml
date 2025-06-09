@@ -33,6 +33,7 @@ dependencies = [
     # Add provider SDKs for pipx installation convenience
     "openai",
     "google-genai",
+    "google-api-core", # Required for google.api_core.exceptions in GeminiClient
     "anthropic",
     "boto3", # Bedrock SDK
     "mistralai", # Mistral SDK

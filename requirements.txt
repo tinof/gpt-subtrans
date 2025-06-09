@@ -10,3 +10,4 @@ setuptools
 httpx
 httpx[socks]
 google-genai
+google-api-core
