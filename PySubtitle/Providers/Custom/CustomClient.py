@@ -183,6 +183,12 @@ class CustomClient(TranslationClient):
     def _generate_request_body(self, prompt, temperature: float):
         request_body = {"temperature": temperature, "stream": False}
 
+        model_name = self.model or ''
+        if model_name.startswith('requesty:'):
+            request_body['model'] = model_name.replace('requesty:', '')
+            request_body['contents'] = prompt.messages
+            return request_body
+
         if self.max_tokens:
             request_body["max_tokens"] = self.max_tokens
 
