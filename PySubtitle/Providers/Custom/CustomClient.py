@@ -55,10 +55,6 @@ class CustomClient(TranslationClient):
     def max_completion_tokens(self):
         return self.settings.get("max_completion_tokens", None)
 
-    @property
-    def body_template(self):
-        return self.settings.get("body_template")
-
     def _request_translation(self, prompt: TranslationPrompt, temperature: float = 0.0) -> Translation:
         """
         Request a translation based on the provided prompt
@@ -185,15 +181,6 @@ class CustomClient(TranslationClient):
             time.sleep(sleep_time)
 
     def _generate_request_body(self, prompt, temperature: float):
-        if self.body_template:
-            import json
-            template = self.body_template.replace('{prompt}', prompt.content)
-            template = template.replace('{messages}', json.dumps(prompt.messages))
-            try:
-                return json.loads(template)
-            except json.JSONDecodeError:
-                raise TranslationImpossibleError(f"Invalid body template: {self.body_template}")
-
         request_body = {"temperature": temperature, "stream": False}
 
         if self.max_tokens:
