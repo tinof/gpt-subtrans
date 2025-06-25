@@ -4,10 +4,7 @@ regex
 appdirs
 events
 requests
-# darkdetect # Removed GUI dependency
 setuptools
-# pyside6 # Removed GUI dependency
 httpx
-httpx[socks]
 google-genai
 google-api-core
