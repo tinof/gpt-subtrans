@@ -5,24 +5,24 @@ Note: GPT-Subtrans requires an active internet connection. Subtitles are sent to
 
 ## Installation
 
-### Using pipx (Recommended for Command-Line Usage)
+### Using pipxu (Recommended for Command-Line Usage)
 
-If you have `pipx` installed (a tool for installing and running Python applications in isolated environments), you can install GPT-Subtrans directly from GitHub:
+If you have `pipxu` installed (a tool for installing and running Python applications in isolated environments), you can install GPT-Subtrans directly from GitHub:
 
 ```sh
-pipx install git+https://github.com/machinewrapped/gpt-subtrans.git
+pipxu install https://github.com/tinof/gpt-subtrans
 ```
 
 This will make the command-line tools (`gpt-subtrans`, `gemini-subtrans`, etc.) available directly in your terminal.
 
 To upgrade to the latest version:
 ```sh
-pipx upgrade gpt-subtrans
+pipxu upgrade gpt-subtrans
 ```
 
 To uninstall:
 ```sh
-pipx uninstall gpt-subtrans
+pipxu uninstall gpt-subtrans
 ```
 
 **Note:** This method installs the command-line tools only, not the GUI.
@@ -361,8 +361,75 @@ batch-process <root_dir> --target_language <lang> --provider_command <cmd> [prov
 batch-process /path/to/my/videos --target_language Spanish --provider_command gemini-subtrans --model "models/gemini-1.5-flash" --ratelimit 30
 ```
 
-### Developers
-When developing, installing from source using `pip install -e .` in a virtual environment is recommended. This allows you to run the commands directly and see your code changes reflected immediately. Using an IDE like Visual Studio Code with a configured `launch.json` can simplify running and debugging specific scripts with arguments. Remember to activate the virtual environment (`source .venv/bin/activate` or `.venv\Scripts\activate`) in your terminal session before running commands.
+### Development
+
+When developing, installing from source using `pip install -e .` in a virtual environment is recommended. This allows you to run the commands directly and see your code changes reflected immediately.
+
+This project uses [Ruff](https://github.com/astral-sh/ruff) for linting and formatting, and [Pyright](https://github.com/microsoft/pyright) for static type checking.
+
+**1. Install Development Dependencies:**
+
+After setting up your virtual environment and installing the base package with `pip install -e .`, install the development tools:
+
+```sh
+pip install -e ".[dev]"
+```
+
+This will install Ruff and Pyright based on the `[project.optional-dependencies]` section in `pyproject.toml`.
+
+**2. Running Checks:**
+
+You can run the checks from the command line:
+
+*   **Ruff (Linting and Formatting):**
+    ```sh
+    # Check for linting errors
+    ruff check .
+
+    # Automatically fix fixable errors
+    ruff check . --fix
+
+    # Format the codebase
+    ruff format .
+    ```
+
+*   **Pyright (Static Type Checking):**
+    ```sh
+    pyright
+    ```
+
+**3. VSCode Integration (Recommended):**
+
+For the best development experience, it's recommended to integrate these tools with Visual Studio Code.
+
+*   **Install Extensions:**
+    *   [Python](https://marketplace.visualstudio.com/items?itemName=ms-python.python) (by Microsoft)
+    *   [Ruff](https://marketplace.visualstudio.com/items?itemName=charliermarsh.ruff) (by Astral Software)
+
+*   **Configure `settings.json`:**
+    Add the following to your user or workspace `settings.json` file in VSCode. You can open the user settings with the command `Preferences: Open User Settings (JSON)`.
+
+    ```json
+    {
+        "python.analysis.typeCheckingMode": "basic",
+        "[python]": {
+            "editor.defaultFormatter": "charliermarsh.ruff",
+            "editor.formatOnSave": true,
+            "editor.codeActionsOnSave": {
+                "source.fixAll": "explicit",
+                "source.organizeImports": "explicit"
+            }
+        },
+        "python.analysis.extraPaths": [
+            "./PySubtitle"
+        ]
+    }
+    ```
+
+    This configuration will:
+    *   Enable type checking with Pyright.
+    *   Set Ruff as the default formatter for Python files.
+    *   Automatically format your code and fix linting errors on save.
 
 ## Project File
 
