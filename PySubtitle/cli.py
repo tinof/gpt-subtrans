@@ -325,6 +325,12 @@ def llm_subtrans_main():
         action="store_true",
         help="Indicates that the endpoint supports system messages in chat requests",
     )
+    parser.add_argument(
+        "--body_format",
+        type=str,
+        default=None,
+        help="Specify the format of the request body (e.g. 'gemini')",
+    )
     args = parser.parse_args()
 
     logger_options = InitLogger("llm-subtrans", args.debug)
@@ -339,6 +345,7 @@ def llm_subtrans_main():
             server_address=args.server,
             supports_conversation=args.chat,
             supports_system_messages=args.systemmessages,
+            body_format=args.body_format,
         )
 
         # Create a project for the translation
