@@ -180,14 +180,12 @@ class CustomClient(TranslationClient):
             logging.warning(f"Retrying in {sleep_time} seconds...")
             time.sleep(sleep_time)
 
+    @property
+    def body_format(self):
+        return self.settings.get("body_format")
+
     def _generate_request_body(self, prompt, temperature: float):
         request_body = {"temperature": temperature, "stream": False}
-
-        model_name = self.model or ''
-        if model_name.startswith('requesty:'):
-            request_body['model'] = model_name.replace('requesty:', '')
-            request_body['contents'] = prompt.messages
-            return request_body
 
         if self.max_tokens:
             request_body["max_tokens"] = self.max_tokens
@@ -198,7 +196,9 @@ class CustomClient(TranslationClient):
         if self.model:
             request_body["model"] = self.model
 
-        if self.supports_conversation:
+        if self.body_format == "gemini":
+            request_body["contents"] = prompt.messages
+        elif self.supports_conversation:
             request_body["messages"] = prompt.messages
         else:
             request_body["prompt"] = prompt.content
