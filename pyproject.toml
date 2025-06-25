@@ -45,17 +45,36 @@ Repository = "https://github.com/machinewrapped/gpt-subtrans"
 "Bug Tracker" = "https://github.com/machinewrapped/gpt-subtrans/issues"
 
 [project.scripts]
-gpt-subtrans = "scripts.gpt_subtrans:main"
-azure-subtrans = "scripts.azure_subtrans:main"
-bedrock-subtrans = "scripts.bedrock_subtrans:main"
-claude-subtrans = "scripts.claude_subtrans:main"
-deepseek-subtrans = "scripts.deepseek_subtrans:main" # Keep others for now, only changing gemini
-gemini-subtrans = "PySubtitle.cli:gemini_main" # Point to the new location
-llm-subtrans = "scripts.llm_subtrans:main"
-mistral-subtrans = "scripts.mistral_subtrans:main"
-batch-process = "scripts.batch_process:main"
+gpt-subtrans = "PySubtitle.cli:gpt_subtrans_main"
+azure-subtrans = "PySubtitle.cli:azure_subtrans_main"
+bedrock-subtrans = "PySubtitle.cli:bedrock_subtrans_main"
+claude-subtrans = "PySubtitle.cli:claude_subtrans_main"
+deepseek-subtrans = "PySubtitle.cli:deepseek_subtrans_main"
+gemini-subtrans = "PySubtitle.cli:gemini_main"
+llm-subtrans = "PySubtitle.cli:llm_subtrans_main"
+mistral-subtrans = "PySubtitle.cli:mistral_subtrans_main"
+batch-process = "PySubtitle.cli:batch_process_main"
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "pyright"
+]
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["PySubtitle*"] # Only include the main library package
-exclude = ["tests*", "PySubtitleHooks*"] # Ex Exclude tests, hooks, and scripts directory from packaging
+include = ["PySubtitle*"]
+exclude = ["tests*", "PySubtitleHooks*", "scripts*"]
+
+[tool.ruff]
+line-length = 120
+select = ["E", "F", "W", "I", "UP", "B", "A", "C4", "T20", "SIM", "ARG"]
+ignore = ["E501"]
+
+[tool.pyright]
+include = ["PySubtitle"]
+exclude = ["**/__pycache__", "tests", "scripts"]
+reportMissingImports = true
+reportMissingTypeStubs = false
+pythonVersion = "3.10"
+pythonPlatform = "All"

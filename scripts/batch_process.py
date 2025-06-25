@@ -1,20 +1,31 @@
-import os
-import subprocess
 import argparse
 import logging
-import sys
+import os
+import subprocess
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+
 
 def main():
     # Use parse_known_args to separate batch arguments from provider arguments
-    parser = argparse.ArgumentParser(description="Batch process SRT files in subdirectories using a specified gpt-subtrans provider.", add_help=False)
-    parser.add_argument('root_dir', help="Root directory containing subfolders with SRT files.")
-    parser.add_argument('--target_language', required=True, help="Target language for translation.")
-    parser.add_argument('--instructionfile', default=None, help="Path to the instruction file for the provider.")
-    parser.add_argument('--provider_command', default='gpt-subtrans', help="The provider command to execute (e.g., gpt-subtrans, gemini-subtrans).")
-    parser.add_argument('--help', action='help', help='Show this help message and exit.')
+    parser = argparse.ArgumentParser(
+        description="Batch process SRT files in subdirectories using a specified gpt-subtrans provider.",
+        add_help=False,
+    )
+    parser.add_argument("root_dir", help="Root directory containing subfolders with SRT files.")
+    parser.add_argument("--target_language", required=True, help="Target language for translation.")
+    parser.add_argument(
+        "--instructionfile",
+        default=None,
+        help="Path to the instruction file for the provider.",
+    )
+    parser.add_argument(
+        "--provider_command",
+        default="gpt-subtrans",
+        help="The provider command to execute (e.g., gpt-subtrans, gemini-subtrans).",
+    )
+    parser.add_argument("--help", action="help", help="Show this help message and exit.")
 
     args, unknown_args = parser.parse_known_args()
 
@@ -42,12 +53,15 @@ def main():
                     command = [
                         args.provider_command,
                         src_file,
-                        "--target_language", args.target_language
+                        "--target_language",
+                        args.target_language,
                     ]
                     if args.instructionfile:
                         # Ensure the instruction file path is valid
                         if not os.path.isfile(args.instructionfile):
-                            logging.warning(f"Instruction file not found: {args.instructionfile}. Skipping for {src_file}.")
+                            logging.warning(
+                                f"Instruction file not found: {args.instructionfile}. Skipping for {src_file}."
+                            )
                             # Decide whether to skip or proceed without it. Let's proceed without.
                             # failed_files += 1
                             # continue
@@ -81,5 +95,6 @@ def main():
     logging.info(f"Successfully processed: {processed_files} files.")
     logging.info(f"Failed to process: {failed_files} files.")
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

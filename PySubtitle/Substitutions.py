@@ -1,13 +1,16 @@
 import logging
-import regex
 from enum import Enum
 
+import regex
+
 from PySubtitle.Helpers import GetValueFromName
+
 
 class Substitutions:
     """
     Helper class to perform textual substitutions based on a dictionary of (before,after) pairs.
     """
+
     class Mode(Enum):
         Auto = 0
         WholeWords = 1
@@ -20,7 +23,7 @@ class Substitutions:
     template_partialwords = r"{}"
     template_automatic = r"(?<!\p{{Script=Latin}}){}(?!\p{{Script=Latin}})"
 
-    def __init__(self, substitutions : dict | list | str, mode : Mode = Mode.Auto):
+    def __init__(self, substitutions: dict | list | str, mode: Mode = Mode.Auto):
         self._patterns = None
         self._mode = self._parse_mode(mode)
         self.substitutions = substitutions
@@ -30,7 +33,7 @@ class Substitutions:
         return self._mode
 
     @mode.setter
-    def mode(self, mode : Mode | int | str):
+    def mode(self, mode: Mode | int | str):
         self._mode = self._parse_mode(mode)
         self._patterns = None
 
@@ -39,7 +42,7 @@ class Substitutions:
         return self._substitutions
 
     @substitutions.setter
-    def substitutions(self, substitutions : dict | list | str):
+    def substitutions(self, substitutions: dict | list | str):
         self._substitutions = Substitutions.Parse(substitutions) if substitutions else {}
         self._patterns = None
 
@@ -49,7 +52,7 @@ class Substitutions:
             self._patterns = self._compile_patterns()
         return self._patterns
 
-    def PerformSubstitutions(self, input : list | str):
+    def PerformSubstitutions(self, input: list | str):
         """
         Try to substitute all (before,after) pairs in an input string
 
@@ -62,15 +65,15 @@ class Substitutions:
 
         return result
 
-    def PerformSubstitutionsOnAll(self, input : list):
+    def PerformSubstitutionsOnAll(self, input: list):
         """
         Try to substitute all (before,after) pairs in a list of strings.
 
         :param input: list of strings to perform substitutions on.
         :return: a list of strings with the substitutions performed, along with a dictionary of (before,after) pairs for each element that had substitutions.
         """
-        result = [ self.PerformSubstitutions(line) for line in input ]
-        replacements = { line: new_line for line, new_line in zip(input, result) if new_line != str(line) }
+        result = [self.PerformSubstitutions(line) for line in input]
+        replacements = {line: new_line for line, new_line in zip(input, result, strict=False) if new_line != str(line)}
         return result, replacements
 
     def _compile_patterns(self) -> list[regex.Pattern, str]:
@@ -105,7 +108,7 @@ class Substitutions:
         return GetValueFromName(mode, self.Mode)
 
     @classmethod
-    def Parse(cls, sub_list : str | list[str] | dict, separator="::") -> dict:
+    def Parse(cls, sub_list: str | list[str] | dict, separator="::") -> dict:
         """
         Parse a list of (before,after) pairs from a string, dictionary or list of strings, or a file containing such pairs.
 
@@ -130,7 +133,7 @@ class Substitutions:
                     substitutions[before] = after
                 elif sub.strip():
                     try:
-                        with open(sub, "r", encoding="utf-8", newline='') as f:
+                        with open(sub, encoding="utf-8", newline="") as f:
                             for line in [line.strip() for line in f if line.strip()]:
                                 if "::" in line:
                                     before, after = line.split("::")

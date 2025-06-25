@@ -1,7 +1,9 @@
-import regex
 import logging
 
-def ParseNames(name_list : str | list[str]) -> list[str]:
+import regex
+
+
+def ParseNames(name_list: str | list[str]) -> list[str]:
     """
     Parse a list of names from a string or list of strings
     """
@@ -14,7 +16,8 @@ def ParseNames(name_list : str | list[str]) -> list[str]:
 
     return []
 
-def ParseDelayFromHeader(value : str) -> float:
+
+def ParseDelayFromHeader(value: str) -> float:
     """
     Try to figure out how long a suggested retry-after is
     """
@@ -28,12 +31,12 @@ def ParseDelayFromHeader(value : str) -> float:
     try:
         delay, unit = match.groups()
         delay = float(delay)
-        unit = unit.lower() if unit else 's'
-        if unit == 's':
+        unit = unit.lower() if unit else "s"
+        if unit == "s":
             pass
-        elif unit == 'm':
+        elif unit == "m":
             delay *= 60
-        elif unit == 'ms':
+        elif unit == "ms":
             delay /= 1000
         else:
             logging.error(f"Unexpected time unit '{unit}'")
@@ -41,7 +44,6 @@ def ParseDelayFromHeader(value : str) -> float:
 
         return max(1, delay)  # ensure at least 1 second
 
-    except Exception as e:
+    except Exception:
         logging.error(f"Unexpected time value '{value}'")
         return 6.66
-

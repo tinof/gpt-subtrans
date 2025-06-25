@@ -1,25 +1,39 @@
-import os
 import logging
+import os
 
-# Use relative imports now that this is part of a package
-from .subtrans_common import InitLogger, CreateArgParser, CreateOptions, CreateTranslator, CreateProject
 from PySubtitle.Options import Options
 from PySubtitle.SubtitleProject import SubtitleProject
 from PySubtitle.SubtitleTranslator import SubtitleTranslator
+
+# Use relative imports now that this is part of a package
+from .subtrans_common import (
+    CreateArgParser,
+    CreateOptions,
+    CreateProject,
+    CreateTranslator,
+    InitLogger,
+)
+
 
 def main():
     provider = "Bedrock"
 
     # Fetch Bedrock-specific environment variables
-    access_key = os.getenv('AWS_ACCESS_KEY_ID')
-    secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
-    aws_region = os.getenv('AWS_REGION', 'us-east-1')  # Default to a common Bedrock region
+    access_key = os.getenv("AWS_ACCESS_KEY_ID")
+    secret_access_key = os.getenv("AWS_SECRET_ACCESS_KEY")
+    aws_region = os.getenv("AWS_REGION", "us-east-1")  # Default to a common Bedrock region
 
-    parser = CreateArgParser(f"Translates an SRT file using a model on Amazon Bedrock")
-    parser.add_argument('-k', '--accesskey', type=str, default=None, help="AWS Access Key ID")
-    parser.add_argument('-s', '--secretkey', type=str, default=None, help="AWS Secret Access Key")
-    parser.add_argument('-r', '--region', type=str, default=None, help="AWS Region (default: us-east-1)")
-    parser.add_argument('-m', '--model', type=str, default=None, help="Model ID to use (e.g., amazon.titan-text-express-v1)")
+    parser = CreateArgParser("Translates an SRT file using a model on Amazon Bedrock")
+    parser.add_argument("-k", "--accesskey", type=str, default=None, help="AWS Access Key ID")
+    parser.add_argument("-s", "--secretkey", type=str, default=None, help="AWS Secret Access Key")
+    parser.add_argument("-r", "--region", type=str, default=None, help="AWS Region (default: us-east-1)")
+    parser.add_argument(
+        "-m",
+        "--model",
+        type=str,
+        default=None,
+        help="Model ID to use (e.g., amazon.titan-text-express-v1)",
+    )
     args = parser.parse_args()
 
     logger_options = InitLogger("bedrock-subtrans", args.debug)
@@ -35,7 +49,12 @@ def main():
         )
 
         # Validate that required Bedrock options are provided
-        if not options.get('access_key') or not options.get('secret_access_key') or not options.get('aws_region') or not options.get('model'):
+        if (
+            not options.get("access_key")
+            or not options.get("secret_access_key")
+            or not options.get("aws_region")
+            or not options.get("model")
+        ):
             raise ValueError("AWS Access Key, Secret Key, Region, and Model ID must be specified.")
 
         # Create a project for the translation
@@ -57,5 +76,6 @@ def main():
         # import sys
         # sys.exit(1)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     main()

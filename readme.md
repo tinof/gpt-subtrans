@@ -110,7 +110,7 @@ If you want to modify the program, run the GUI on Linux, or if `pipx` is not sui
 
 1.  **Clone the repository:**
     ```sh
-    git clone https://github.com/machinewrapped/gpt-subtrans.git
+    git clone https://github.com/tinof/gpt-subtrans.git
     cd gpt-subtrans
     ```
 
