@@ -68,6 +68,8 @@ exclude = ["tests*", "PySubtitleHooks*", "scripts*"]
 
 [tool.ruff]
 line-length = 120
+
+[tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B", "A", "C4", "T20", "SIM", "ARG"]
 ignore = ["E501"]
 

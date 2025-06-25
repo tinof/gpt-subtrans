@@ -47,6 +47,7 @@ class Provider_CustomServer(TranslationProvider):
                     "prompt_template",
                     os.getenv("CUSTOM_PROMPT_TEMPLATE", default_prompt_template),
                 ),
+                "body_template": settings.get("body_template", os.getenv("CUSTOM_BODY_TEMPLATE")),
                 "temperature": settings.get("temperature", GetEnvFloat("CUSTOM_TEMPERATURE", 0.0)),
                 "max_tokens": settings.get("max_tokens", GetEnvInteger("CUSTOM_MAX_TOKENS", 0)),
                 "max_completion_tokens": settings.get(
@@ -128,6 +129,10 @@ class Provider_CustomServer(TranslationProvider):
                     "prompt_template": (
                         MULTILINE_OPTION,
                         "Template for the prompt to send to the server (use {prompt} and {context} tags)",
+                    ),
+                    "body_template": (
+                        MULTILINE_OPTION,
+                        "Template for the request body to send to the server (use {prompt} and {messages} tags)",
                     ),
                     "temperature": (
                         float,
