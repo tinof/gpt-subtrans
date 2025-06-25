@@ -8,6 +8,7 @@ setuptools
 httpx[socks]
 openai
 google-genai
+google-api-core
 anthropic
 boto3
 mistralai

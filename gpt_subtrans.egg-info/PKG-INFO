@@ -27,6 +27,7 @@ Requires-Dist: setuptools
 Requires-Dist: httpx[socks]
 Requires-Dist: openai
 Requires-Dist: google-genai
+Requires-Dist: google-api-core
 Requires-Dist: anthropic
 Requires-Dist: boto3
 Requires-Dist: mistralai
