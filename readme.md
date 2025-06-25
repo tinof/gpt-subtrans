@@ -10,7 +10,7 @@ Note: GPT-Subtrans requires an active internet connection. Subtitles are sent to
 If you have `pipxu` installed (a tool for installing and running Python applications in isolated environments), you can install GPT-Subtrans directly from GitHub:
 
 ```sh
-pipxu install https://github.com/tinof/gpt-subtrans
+pipxu install git+https://github.com/tinof/gpt-subtrans.git
 ```
 
 This will make the command-line tools (`gpt-subtrans`, `gemini-subtrans`, etc.) available directly in your terminal.
