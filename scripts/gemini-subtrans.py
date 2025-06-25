@@ -22,11 +22,11 @@ def main():
     try:
         options : Options = CreateOptions(args, provider, model=args.model or default_model)
 
-        # Create a translator with the provided options
-        translator : SubtitleTranslator = CreateTranslator(options)
-
         # Create a project for the translation
         project : SubtitleProject = CreateProject(options, args)
+
+        # Create a translator with the provided options
+        translator : SubtitleTranslator = CreateTranslator(options)
 
         # Translate the subtitles
         project.TranslateSubtitles(translator)

@@ -33,18 +33,18 @@ def main():
             model=args.model or default_model
         )
 
-        # Create a translator with the provided options
-        translator : SubtitleTranslator = CreateTranslator(options)
+    # Create a project for the translation
+    project : SubtitleProject = CreateProject(options, args)
 
-        # Create a project for the translation
-        project : SubtitleProject = CreateProject(options, args)
+    # Create a translator with the provided options
+    translator : SubtitleTranslator = CreateTranslator(options)
 
-        # Translate the subtitles
-        project.TranslateSubtitles(translator)
+    # Translate the subtitles
+    project.TranslateSubtitles(translator)
 
-        if project.write_project:
-            logging.info(f"Writing project data to {str(project.projectfile)}")
-            project.WriteProjectFile()
+    if project.write_project:
+        logging.info(f"Writing project data to {str(project.projectfile)}")
+        project.WriteProjectFile()
 
     except Exception as e:
         logging.error(f"Translation failed: {e}", exc_info=True)

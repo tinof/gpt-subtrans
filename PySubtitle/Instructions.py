@@ -5,42 +5,48 @@ from PySubtitle.Helpers.Resources import GetResourcePath, config_dir
 
 linesep = '\n'
 
+DEFAULT_TASK_TYPE = "Translation"
+
 default_instructions = linesep.join([
-	"Your task is to accurately translate subtitles into a target language."
-	"The user will provide a batch of lines for translation, you should respond with an ACCURATE, CONCISE, and NATURAL-SOUNDING translation for EACH LINE in the batch."
-	"The user may provide additional information, such as a list of names or a synopsis of earlier batches. Use this to improve your translation."
-	"Your response will be processed by an automated system, so it is ESSENTIAL that you respond using this format:"
-	""
-	"Example input (English to German):"
-	"#700"
-	"Original>"
-	"In the age of digital transformation,"
-	"Translation>"
-	""
-	"#701"
-	"Original>"
-	"those who resist change may find themselves left behind."
-	"Translation>"
-	""
-	"You should respond with:"
-	""
-	"#700"
-	"Original>"
-	"In the age of digital transformation,"
-	"Translation>"
-	"Im Zeitalter der digitalen Transformation,"
-	""
-	"#701"
-	"Original>"
-	"those who resist change may find themselves left behind."
-	"Translation>"
-	"diejenigen, die sich dem Wandel widersetzen,"
-	"könnten sich zurückgelassen finden."
+	"Your task is to accurately translate subtitles into a target language.",
+	"",
+	"The user will provide a batch of lines for translation, you should respond with an ACCURATE, CONCISE, and NATURAL-SOUNDING translation for EACH LINE in the batch.",
+	"The user may provide additional information, such as a list of names or a synopsis of earlier batches. Use this to improve your translation.",
+	"Your response will be processed by an automated system, so it is ESSENTIAL that you respond using this format:",
+	"",
+	"Example input (English to German):",
+	"",
+	"#700",
+	"Original>",
+	"In the age of digital transformation,",
+	"Translation>",
+	"",
+	"#701",
+	"Original>",
+	"those who resist change may find themselves left behind.",
+	"Translation>",
+	"",
+	"You should respond with:",
+	"",
+	"#700",
+	"Original>",
+	"In the age of digital transformation,",
+	"Translation>",
+	"Im Zeitalter der digitalen Transformation,",
+	"",
+	"#701",
+	"Original>",
+	"those who resist change may find themselves left behind.",
+	"Translation>",
+	"diejenigen, die sich dem Wandel widersetzen,",
+	"könnten sich zurückgelassen finden.",
     ])
 
 default_retry_instructions = linesep.join([
-	"There was an issue with the previous translation."
-	"Translate the subtitles again, paying careful attention to ensure that each line is translated SEPARATELY, and that EVERY line has a matching translation."
+	"There was an issue with the previous translation.",
+	"",
+	"Translate the subtitles again, paying careful attention to ensure that each line is translated SEPARATELY, and that EVERY line has a matching translation.",
+	"",
 	"Do NOT merge lines together in the translation, it leads to incorrect timings and confusion for the reader."
     ])
 
@@ -55,6 +61,7 @@ class Instructions:
             'instructions': self.instructions,
             'retry_instructions': self.retry_instructions,
             'instruction_file': self.instruction_file,
+            'task_type' : self.task_type
         }
 
         if self.target_language:
@@ -68,6 +75,7 @@ class Instructions:
         self.retry_instructions = settings.get('retry_instructions') or default_retry_instructions
         self.instruction_file = settings.get('instruction_file') or None
         self.target_language = None
+        self.task_type = settings.get('task_type') or DEFAULT_TASK_TYPE
 
         # Add any additional instructions from the command line
         if settings.get('instruction_args'):
@@ -121,6 +129,7 @@ class Instructions:
         self.retry_instructions = linesep.join(sections.get('retry_instructions', [])) or default_retry_instructions
         self.instruction_file = os.path.basename(filepath)
         self.target_language = ''.join(sections.get('target_language', None)) if 'target_language' in sections else None
+        self.task_type = ''.join(sections.get('task_type', None)) if 'task_type' in sections else DEFAULT_TASK_TYPE
 
         if not self.prompt or not self.instructions:
             raise ValueError("Invalid instruction file")
@@ -138,6 +147,8 @@ class Instructions:
             with open(filepath, "w", encoding="utf-8", newline='') as f:
                 f.write("### prompt\n")
                 f.write(self.prompt)
+                if self.task_type != DEFAULT_TASK_TYPE:
+                    f.write("\n\n### task_type\n{}".format(self.task_type))
                 f.write("\n\n### instructions\n")
                 f.write(self.instructions)
                 f.write("\n\n### retry_instructions\n")

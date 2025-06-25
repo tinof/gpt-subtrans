@@ -33,6 +33,10 @@ class SubtitleProject:
     @property
     def target_language(self):
         return self.subtitles.target_language if self.subtitles else None
+    
+    @property
+    def task_type(self):
+        return self.subtitles.task_type if self.subtitles else None
 
     @property
     def movie_name(self):
@@ -215,7 +219,7 @@ class SubtitleProject:
         Save the project file if it needs updating
         """
         with self.lock:
-            if self.needs_writing:
+            if self.needs_writing and self.subtitles and self.subtitles.scenes:
                 self.WriteProjectFile()
 
     def GetProjectSettings(self):
