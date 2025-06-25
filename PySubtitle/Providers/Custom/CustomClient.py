@@ -59,25 +59,30 @@ class CustomClient(TranslationClient):
     def body_template(self):
         return self.settings.get("body_template")
 
-    def _request_translation(self, prompt: TranslationPrompt, temperature: float = None) -> Translation:
+    def _request_translation(self, prompt: TranslationPrompt, temperature: float = 0.0) -> Translation:
         """
         Request a translation based on the provided prompt
         """
         logging.debug(f"Messages:\n{FormatMessages(prompt.messages)}")
 
-        temperature = temperature or self.temperature
-        response = self._make_request(prompt, temperature)
+        request_temperature = temperature if temperature is not None else self.temperature
 
-        translation = Translation(response) if response else None
+        if request_temperature is None:
+            request_temperature = 0.0
 
-        return translation
+        response = self._make_request(prompt, request_temperature)
+
+        if not response:
+            raise TranslationImpossibleError("No response from server")
+
+        return Translation(response)
 
     def _abort(self):
         if self.client:
             self.client.close()
         return super()._abort()
 
-    def _make_request(self, prompt: TranslationPrompt, temperature):
+    def _make_request(self, prompt: TranslationPrompt, temperature: float) -> dict | None:
         """
         Make a request to the server to provide a translation
         """
@@ -91,12 +96,18 @@ class CustomClient(TranslationClient):
                 request_body = self._generate_request_body(prompt, temperature)
                 logging.debug(f"Request Body:\n{request_body}")
 
+                if not self.server_address:
+                    raise TranslationImpossibleError("Server address is not set")
+
                 self.client = httpx.Client(
                     base_url=self.server_address,
                     follow_redirects=True,
                     timeout=300.0,
                     headers=self.headers,
                 )
+
+                if not self.endpoint:
+                    raise TranslationImpossibleError("Endpoint is not set")
 
                 result: httpx.Response = self.client.post(self.endpoint, json=request_body)
 
@@ -173,7 +184,7 @@ class CustomClient(TranslationClient):
             logging.warning(f"Retrying in {sleep_time} seconds...")
             time.sleep(sleep_time)
 
-    def _generate_request_body(self, prompt, temperature):
+    def _generate_request_body(self, prompt, temperature: float):
         if self.body_template:
             import json
             template = self.body_template.replace('{prompt}', prompt.content)

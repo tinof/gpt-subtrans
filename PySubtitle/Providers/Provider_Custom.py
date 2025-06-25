@@ -107,7 +107,7 @@ class Provider_CustomServer(TranslationProvider):
             return self.information_invalid
 
     def GetOptions(self) -> dict:
-        options = {
+        options: dict[str, tuple] = {
             "server_address": (str, "The address of the local server"),
             "endpoint": (str, "The API function to call on the server"),
         }
