@@ -2,6 +2,7 @@ import importlib.util
 import logging
 import os
 
+
 if not importlib.util.find_spec("openai"):
     logging.info("OpenAI SDK is not installed. DeepSeek provider will not be available")
 else:
@@ -14,7 +15,6 @@ else:
         from PySubtitle.SubtitleError import ProviderError
         from PySubtitle.TranslationClient import TranslationClient
         from PySubtitle.TranslationProvider import TranslationProvider
-
 
         class DeepSeekProvider(TranslationProvider):
             name = "DeepSeek"
@@ -29,51 +29,65 @@ else:
             <p>Note that you must have credit to use DeepSeek, there is no free usage tier.</p>
             """
 
-            def __init__(self, settings : dict):
-                super().__init__(self.name, {
-                    "api_key": settings.get('api_key', os.getenv('DEEPSEEK_API_KEY')),
-                    "api_base": settings.get('api_base', os.getenv('DEEPSEEK_API_BASE', "https://api.deepseek.com")),
-                    "model": settings.get('model', os.getenv('DEEPSEEK_MODEL', "deepseek-chat")),
-                    'max_tokens': settings.get('max_tokens', os.getenv('DEEPSEEK_MAX_TOKENS', 8192)),
-                    'temperature': settings.get('temperature', GetEnvFloat('DEEPSEEK_TEMPERATURE', 1.3)),
-                    'rate_limit': settings.get('rate_limit', GetEnvFloat('DEEPSEEK_RATE_LIMIT')),
-                    'reuse_client': settings.get('reuse_client', False)
-                })
+            def __init__(self, settings: dict):
+                super().__init__(
+                    self.name,
+                    {
+                        "api_key": settings.get("api_key", os.getenv("DEEPSEEK_API_KEY")),
+                        "api_base": settings.get("api_base", os.getenv("DEEPSEEK_API_BASE", "https://api.deepseek.com")),
+                        "model": settings.get("model", os.getenv("DEEPSEEK_MODEL", "deepseek-chat")),
+                        "max_tokens": settings.get("max_tokens", os.getenv("DEEPSEEK_MAX_TOKENS", 8192)),
+                        "temperature": settings.get("temperature", GetEnvFloat("DEEPSEEK_TEMPERATURE", 1.3)),
+                        "rate_limit": settings.get("rate_limit", GetEnvFloat("DEEPSEEK_RATE_LIMIT")),
+                        "reuse_client": settings.get("reuse_client", False),
+                    },
+                )
 
-                self.refresh_when_changed = ['api_key', 'api_base', 'model']
+                self.refresh_when_changed = ["api_key", "api_base", "model"]
 
             @property
             def api_key(self):
-                return self.settings.get('api_key')
+                return self.settings.get("api_key")
 
             @property
             def api_base(self):
-                return self.settings.get('api_base')
+                return self.settings.get("api_base")
 
-            def GetTranslationClient(self, settings : dict) -> TranslationClient:
+            def GetTranslationClient(self, settings: dict) -> TranslationClient:
                 client_settings = self.settings.copy()
                 client_settings.update(settings)
                 return DeepSeekClient(client_settings)
 
             def GetOptions(self) -> dict:
                 options = {
-                    'api_key': (str, "A DeepSeek API key is required to use this provider (https://platform.deepseek.com/api_keys)"),
-                    'api_base': (str, "The base URL to use for requests (default is https://api.deepseek.com)"),
+                    "api_key": (
+                        str,
+                        "A DeepSeek API key is required to use this provider (https://platform.deepseek.com/api_keys)",
+                    ),
+                    "api_base": (str, "The base URL to use for requests (default is https://api.deepseek.com)"),
                 }
 
                 if self.api_key:
                     models = self.available_models
                     if models:
-                        options.update({
-                            'model': (models, "AI model to use as the translator"),
-                            'reuse_client': (bool, "Reuse connection for multiple requests (otherwise a new connection is established for each)"),
-                            'max_tokens': (int, "Maximum number of output tokens to return in the response."),
-                            'temperature': (float, "Amount of random variance to add to translations. Generally speaking, none is best"),
-                            'rate_limit': (float, "Maximum API requests per minute.")
-                        })
+                        options.update(
+                            {
+                                "model": (models, "AI model to use as the translator"),
+                                "reuse_client": (
+                                    bool,
+                                    "Reuse connection for multiple requests (otherwise a new connection is established for each)",
+                                ),
+                                "max_tokens": (int, "Maximum number of output tokens to return in the response."),
+                                "temperature": (
+                                    float,
+                                    "Amount of random variance to add to translations. Generally speaking, none is best",
+                                ),
+                                "rate_limit": (float, "Maximum API requests per minute."),
+                            }
+                        )
 
                     else:
-                        options['model'] = (["Unable to retrieve models"], "Check API key and base URL and try again")
+                        options["model"] = (["Unable to retrieve models"], "Check API key and base URL and try again")
 
                 return options
 
@@ -89,16 +103,13 @@ else:
                         logging.debug("No DeepSeek API key provided")
                         return []
 
-                    client = openai.OpenAI(
-                        api_key=self.api_key,
-                        base_url=self.api_base or None
-                    )
+                    client = openai.OpenAI(api_key=self.api_key, base_url=self.api_base or None)
                     response = client.models.list()
 
                     if not response or not response.data:
                         return []
 
-                    model_list = [ model.id for model in response.data]
+                    model_list = [model.id for model in response.data]
 
                     return sorted(model_list)
 
@@ -125,7 +136,7 @@ else:
                 """
                 If user has set a rate limit we can't make multiple requests at once
                 """
-                if self.settings.get('rate_limit', 0.0) != 0.0:
+                if self.settings.get("rate_limit", 0.0) != 0.0:
                     return False
 
                 return True

@@ -1,0 +1,169 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Test Suite
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          # Reduce matrix size for faster builds - test all Python versions on Ubuntu only
+          - os: macos-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.11"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install pipx
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pipx
+        python -m pipx ensurepath
+
+    - name: Add pipx to PATH (Windows)
+      if: runner.os == 'Windows'
+      run: echo "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Add pipx to PATH (Unix)
+      if: runner.os != 'Windows'
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install test dependencies
+      run: |
+        python -m pip install pytest pytest-cov
+
+    - name: Run unit tests
+      run: |
+        python -m pytest tests/ -v --cov=src/PySubtitle --cov-report=xml
+
+    - name: Upload coverage to Codecov
+      if: matrix.os == 'ubuntu-latest' && matrix.python-version == '3.12'
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.xml
+        fail_ci_if_error: false
+
+  pipx-installation-test:
+    name: pipx Installation Test
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          # Reduce matrix size - test all Python versions on Ubuntu, latest on others
+          - os: macos-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.12"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install pipx
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pipx
+        python -m pipx ensurepath
+
+    - name: Add pipx to PATH (Windows)
+      if: runner.os == 'Windows'
+      run: echo "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Add pipx to PATH (Unix)
+      if: runner.os != 'Windows'
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install package with pipx
+      run: |
+        pipx install .
+
+    - name: Run pipx installation tests
+      run: |
+        python -m pytest tests/test_pipx_installation.py -v
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+        cache: 'pip'
+
+    - name: Install Ruff
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install ruff
+
+    - name: Run Ruff linter
+      run: |
+        ruff check src/ tests/ --output-format=github
+
+    - name: Run Ruff formatter check
+      run: |
+        ruff format src/ tests/ --check
+
+  security:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.12"
+
+    - name: Install security tools
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install bandit
+
+    - name: Run bandit security scan
+      run: |
+        bandit -r src/ -f json -o bandit-report.json || true
+        bandit -r src/

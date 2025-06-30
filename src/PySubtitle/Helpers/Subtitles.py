@@ -1,11 +1,13 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
+
 import regex
 import srt
 
 from PySubtitle.SubtitleLine import SubtitleLine
 
-def AddOrUpdateLine(lines : list[SubtitleLine], line : SubtitleLine) -> int:
+
+def AddOrUpdateLine(lines: list[SubtitleLine], line: SubtitleLine) -> int:
     """
     Insert a line into a list of lines at the correct position, or replace any existing line.
     """
@@ -22,7 +24,8 @@ def AddOrUpdateLine(lines : list[SubtitleLine], line : SubtitleLine) -> int:
             lines.insert(i, line)
             return i
 
-def MergeSubtitles(merged_lines : list[SubtitleLine]) -> SubtitleLine:
+
+def MergeSubtitles(merged_lines: list[SubtitleLine]) -> SubtitleLine:
     """
     Merge multiple lines into a single line with the same start and end times.
     """
@@ -43,7 +46,8 @@ def MergeSubtitles(merged_lines : list[SubtitleLine]) -> SubtitleLine:
     subtitle = srt.Subtitle(merged_number, merged_start, merged_end, merged_content)
     return SubtitleLine(subtitle, translation=merged_translation, original=merged_original)
 
-def MergeTranslations(lines : list[SubtitleLine], translated : list[SubtitleLine]) -> list[SubtitleLine]:
+
+def MergeTranslations(lines: list[SubtitleLine], translated: list[SubtitleLine]) -> list[SubtitleLine]:
     """
     Replace lines with corresponding lines in translated
     """
@@ -56,7 +60,8 @@ def MergeTranslations(lines : list[SubtitleLine], translated : list[SubtitleLine
 
     return lines
 
-def ResyncTranslatedLines(original_lines : list[SubtitleLine], translated_lines : list[SubtitleLine]):
+
+def ResyncTranslatedLines(original_lines: list[SubtitleLine], translated_lines: list[SubtitleLine]):
     """
     Copy number, start and end from original lines to matching translated lines.
     """
@@ -70,14 +75,19 @@ def ResyncTranslatedLines(original_lines : list[SubtitleLine], translated_lines 
         translated_lines[i].number = original_lines[i].number
 
     if num_original < num_translated:
-        logging.warning(f"Number of translated lines exceeds the number of original lines. "
-                        f"Removed {num_translated - num_original} extra translated lines.")
+        logging.warning(
+            f"Number of translated lines exceeds the number of original lines. "
+            f"Removed {num_translated - num_original} extra translated lines."
+        )
         del translated_lines[num_original:]
 
     elif num_original > num_translated:
         logging.warning(f"Number of lines in original and translated subtitles don't match. Synced {min_lines} lines.")
 
-def FindSplitPoint(line: SubtitleLine, split_sequences: list[regex.Pattern], min_duration: timedelta, min_split_chars: int) -> int | None:
+
+def FindSplitPoint(
+    line: SubtitleLine, split_sequences: list[regex.Pattern], min_duration: timedelta, min_split_chars: int
+) -> int | None:
     """
     Find the optimal split point for a subtitle.
 
@@ -116,7 +126,8 @@ def FindSplitPoint(line: SubtitleLine, split_sequences: list[regex.Pattern], min
 
     return None
 
-def GetProportionalDuration(line : SubtitleLine, num_characters : int, min_duration : timedelta = None) -> timedelta:
+
+def GetProportionalDuration(line: SubtitleLine, num_characters: int, min_duration: timedelta = None) -> timedelta:
     """
     Calculate the proportional duration of a character string as a percentage of a subtitle
     """
@@ -133,4 +144,3 @@ def GetProportionalDuration(line : SubtitleLine, num_characters : int, min_durat
         length_seconds = max(length_seconds, min_duration.total_seconds())
 
     return timedelta(seconds=length_seconds)
-

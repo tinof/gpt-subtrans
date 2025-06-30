@@ -1,0 +1,142 @@
+name: pipx Installation Validation
+
+on:
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'src/**'
+      - 'pyproject.toml'
+      - 'tests/test_pipx_installation.py'
+      - '.github/workflows/pipx-validation.yml'
+
+jobs:
+  validate-pipx-installation:
+    name: Validate pipx Installation
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        exclude:
+          # Test all Python versions on Ubuntu, latest on others for efficiency
+          - os: macos-latest
+            python-version: "3.10"
+          - os: macos-latest
+            python-version: "3.11"
+          - os: macos-latest
+            python-version: "3.12"
+          - os: windows-latest
+            python-version: "3.10"
+          - os: windows-latest
+            python-version: "3.11"
+          - os: windows-latest
+            python-version: "3.12"
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ matrix.python-version }}
+        cache: 'pip'
+
+    - name: Install pipx
+      run: |
+        python -m pip install --upgrade pip
+        python -m pip install pipx
+        python -m pipx ensurepath
+
+    - name: Add pipx to PATH (Windows)
+      if: runner.os == 'Windows'
+      run: echo "$env:USERPROFILE\.local\bin" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+    - name: Add pipx to PATH (Unix)
+      if: runner.os != 'Windows'
+      run: echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+    - name: Install package with pipx
+      run: |
+        pipx install .
+
+    - name: Verify CLI tools are available
+      shell: bash
+      run: |
+        echo "Checking CLI tools availability..."
+        tools=("gpt-subtrans" "claude-subtrans" "gemini-subtrans" "deepseek-subtrans" "mistral-subtrans" "bedrock-subtrans" "llm-subtrans" "azure-subtrans")
+
+        for tool in "${tools[@]}"; do
+          if command -v "$tool" >/dev/null 2>&1; then
+            echo "✓ $tool found at: $(command -v "$tool")"
+          else
+            echo "✗ $tool not found in PATH"
+            exit 1
+          fi
+        done
+
+    - name: Test CLI help commands
+      shell: bash
+      run: |
+        echo "Testing CLI help commands..."
+        tools=("gpt-subtrans" "claude-subtrans" "gemini-subtrans" "deepseek-subtrans" "mistral-subtrans" "bedrock-subtrans" "llm-subtrans" "azure-subtrans")
+
+        for tool in "${tools[@]}"; do
+          echo "Testing $tool --help..."
+          if "$tool" --help | grep -i "usage:" >/dev/null; then
+            echo "✓ $tool help command works"
+          else
+            echo "✗ $tool help command failed"
+            exit 1
+          fi
+        done
+
+    - name: Test SRT file parsing
+      shell: bash
+      run: |
+        echo "Testing SRT file parsing..."
+
+        # Create test SRT file
+        cat > test.srt << 'EOF'
+        1
+        00:00:01,000 --> 00:00:03,000
+        Hello, world!
+
+        2
+        00:00:04,000 --> 00:00:06,000
+        This is a test subtitle.
+        EOF
+
+        # Test parsing (maxlines=0 to avoid API calls)
+        if gpt-subtrans test.srt --maxlines 0 --debug 2>&1 | grep -i "2 subtitles" >/dev/null; then
+          echo "✓ SRT file parsing works correctly"
+        else
+          echo "✗ SRT file parsing failed"
+          exit 1
+        fi
+
+        # Clean up
+        rm -f test.srt
+
+    - name: Run package structure tests
+      run: |
+        python -m pip install pytest
+        python -m pytest tests/test_pipx_installation.py::TestPackageStructure -v
+
+  # Summary job that depends on all matrix jobs
+  pipx-validation-summary:
+    name: pipx Validation Summary
+    runs-on: ubuntu-latest
+    needs: validate-pipx-installation
+    if: always()
+
+    steps:
+    - name: Check validation results
+      run: |
+        if [ "${{ needs.validate-pipx-installation.result }}" == "success" ]; then
+          echo "✅ All pipx installation validation tests passed!"
+        else
+          echo "❌ pipx installation validation failed!"
+          exit 1
+        fi

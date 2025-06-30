@@ -2,6 +2,7 @@ import importlib.util
 import logging
 import os
 
+
 if not importlib.util.find_spec("openai"):
     logging.info("OpenAI SDK is not installed. OpenAI provider will not be available")
 else:
@@ -36,32 +37,37 @@ else:
             <p>Note that if your API Key is attached to a free trial account the <a href="https://platform.openai.com/docs/guides/rate-limits?context=tier-free">rate limit</a> for requests will be <i>severely</i> limited.</p>
             """
 
-            def __init__(self, settings : dict):
-                super().__init__(self.name, {
-                    "api_key": settings.get('api_key', os.getenv('OPENAI_API_KEY')),
-                    "api_base": settings.get('api_base', os.getenv('OPENAI_API_BASE')),
-                    "model": settings.get('model', os.getenv('OPENAI_MODEL', "gpt-4o-mini")),
-                    'temperature': settings.get('temperature', GetEnvFloat('OPENAI_TEMPERATURE', 0.0)),
-                    'rate_limit': settings.get('rate_limit', GetEnvFloat('OPENAI_RATE_LIMIT')),
-                    "free_plan": settings.get('free_plan', os.getenv('OPENAI_FREE_PLAN') == "True"),
-                    'max_instruct_tokens': settings.get('max_instruct_tokens', int(os.getenv('MAX_INSTRUCT_TOKENS', 2048))),
-                    'use_httpx': settings.get('use_httpx', os.getenv('OPENAI_USE_HTTPX', "False") == "True"),
-                    'reasoning_effort': settings.get('reasoning_effort', os.getenv('OPENAI_REASONING_EFFORT', "low")),
-                })
+            def __init__(self, settings: dict):
+                super().__init__(
+                    self.name,
+                    {
+                        "api_key": settings.get("api_key", os.getenv("OPENAI_API_KEY")),
+                        "api_base": settings.get("api_base", os.getenv("OPENAI_API_BASE")),
+                        "model": settings.get("model", os.getenv("OPENAI_MODEL", "gpt-4o-mini")),
+                        "temperature": settings.get("temperature", GetEnvFloat("OPENAI_TEMPERATURE", 0.0)),
+                        "rate_limit": settings.get("rate_limit", GetEnvFloat("OPENAI_RATE_LIMIT")),
+                        "free_plan": settings.get("free_plan", os.getenv("OPENAI_FREE_PLAN") == "True"),
+                        "max_instruct_tokens": settings.get(
+                            "max_instruct_tokens", int(os.getenv("MAX_INSTRUCT_TOKENS", 2048))
+                        ),
+                        "use_httpx": settings.get("use_httpx", os.getenv("OPENAI_USE_HTTPX", "False") == "True"),
+                        "reasoning_effort": settings.get("reasoning_effort", os.getenv("OPENAI_REASONING_EFFORT", "low")),
+                    },
+                )
 
-                self.refresh_when_changed = ['api_key', 'api_base', 'model']
+                self.refresh_when_changed = ["api_key", "api_base", "model"]
 
-                self.valid_model_types = [ "gpt", "o1", "o3" ]
-                self.excluded_model_types = [ "vision", "realtime", "audio" ]
-                self.reasoning_models = [ "o1","o3","o4","o5" ]
+                self.valid_model_types = ["gpt", "o1", "o3"]
+                self.excluded_model_types = ["vision", "realtime", "audio"]
+                self.reasoning_models = ["o1", "o3", "o4", "o5"]
 
             @property
             def api_key(self):
-                return self.settings.get('api_key')
+                return self.settings.get("api_key")
 
             @property
             def api_base(self):
-                return self.settings.get('api_base')
+                return self.settings.get("api_base")
 
             @property
             def is_instruct_model(self):
@@ -69,9 +75,11 @@ else:
 
             @property
             def is_reasoning_model(self):
-                return self.selected_model and any(self.selected_model.startswith(reasoning_model) for reasoning_model in self.reasoning_models)
+                return self.selected_model and any(
+                    self.selected_model.startswith(reasoning_model) for reasoning_model in self.reasoning_models
+                )
 
-            def GetTranslationClient(self, settings : dict) -> TranslationClient:
+            def GetTranslationClient(self, settings: dict) -> TranslationClient:
                 client_settings = self.settings.copy()
                 client_settings.update(settings)
                 if self.is_instruct_model:
@@ -83,31 +91,57 @@ else:
 
             def GetOptions(self) -> dict:
                 options = {
-                    'api_key': (str, "An OpenAI API key is required to use this provider (https://platform.openai.com/account/api-keys)"),
-                    'api_base': (str, "The base URL to use for requests - leave as default unless you know you need something else"),
+                    "api_key": (
+                        str,
+                        "An OpenAI API key is required to use this provider (https://platform.openai.com/account/api-keys)",
+                    ),
+                    "api_base": (
+                        str,
+                        "The base URL to use for requests - leave as default unless you know you need something else",
+                    ),
                 }
 
                 if self.api_base:
-                    options['use_httpx'] = (bool, "Use the httpx library for requests. May help if you receive a 307 redirect error with a custom api_base")
+                    options["use_httpx"] = (
+                        bool,
+                        "Use the httpx library for requests. May help if you receive a 307 redirect error with a custom api_base",
+                    )
 
                 if self.api_key:
                     models = self.available_models
                     if models:
-                        options.update({
-                            'model': (models, "AI model to use as the translator" if models else "Unable to retrieve models"),
-                            'rate_limit': (float, "Maximum OpenAI API requests per minute. Mainly useful if you are on the restricted free plan")
-                        })
+                        options.update(
+                            {
+                                "model": (
+                                    models,
+                                    "AI model to use as the translator" if models else "Unable to retrieve models",
+                                ),
+                                "rate_limit": (
+                                    float,
+                                    "Maximum OpenAI API requests per minute. Mainly useful if you are on the restricted free plan",
+                                ),
+                            }
+                        )
 
                         if self.is_instruct_model:
-                            options['max_instruct_tokens'] = (int, "Maximum tokens a completion can contain (only applicable for -instruct models)")
+                            options["max_instruct_tokens"] = (
+                                int,
+                                "Maximum tokens a completion can contain (only applicable for -instruct models)",
+                            )
 
                         if self.is_reasoning_model:
-                            options['reasoning_effort'] = (["low", "medium", "high"], "The level of reasoning effort to use for the model")
+                            options["reasoning_effort"] = (
+                                ["low", "medium", "high"],
+                                "The level of reasoning effort to use for the model",
+                            )
                         else:
-                            options['temperature'] = (float, "Amount of random variance to add to translations. Generally speaking, none is best")
+                            options["temperature"] = (
+                                float,
+                                "Amount of random variance to add to translations. Generally speaking, none is best",
+                            )
 
                     else:
-                        options['model'] = (["Unable to retrieve models"], "Check API key and base URL and try again")
+                        options["model"] = (["Unable to retrieve models"], "Check API key and base URL and try again")
 
                 return options
 
@@ -123,22 +157,27 @@ else:
                         logging.debug("No OpenAI API key provided")
                         return []
 
-                    client = openai.OpenAI(
-                        api_key=self.api_key,
-                        base_url=self.api_base or None
-                    )
+                    client = openai.OpenAI(api_key=self.api_key, base_url=self.api_base or None)
                     response = client.models.list()
 
                     if not response or not response.data:
                         return []
 
-                    model_list = [ model.id for model in response.data if any(model.id.startswith(prefix) for prefix in self.valid_model_types) ]
+                    model_list = [
+                        model.id
+                        for model in response.data
+                        if any(model.id.startswith(prefix) for prefix in self.valid_model_types)
+                    ]
 
-                    model_list = [ model for model in model_list if not any([ model.find(exclude) >= 0 for exclude in self.excluded_model_types ]) ]
+                    model_list = [
+                        model
+                        for model in model_list
+                        if not any([model.find(exclude) >= 0 for exclude in self.excluded_model_types])
+                    ]
 
                     # Maybe this isn't really an OpenAI endpoint, just return all the available models
                     if not model_list:
-                        model_list = [ model.id for model in response.data ]
+                        model_list = [model.id for model in response.data]
 
                     return sorted(model_list)
 
@@ -167,10 +206,10 @@ else:
                 """
                 If user is on the free plan or has set a rate limit it is better not to try parallel requests
                 """
-                if self.settings.get('free_plan'):
+                if self.settings.get("free_plan"):
                     return False
 
-                if self.settings.get('rate_limit', 0.0) != 0.0:
+                if self.settings.get("rate_limit", 0.0) != 0.0:
                     return False
 
                 return True

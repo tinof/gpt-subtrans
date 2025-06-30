@@ -1,14 +1,6 @@
 _movie = "Chinese Dinner (2001)"
 _description = "Hoshino is the owner of a Chinese restaurant. One evening he’s sitting down in a private room to enjoy an elaborate dinner. He is in the mood for celebrating when a surprise visitor arrives. The longest meal of Hoshino’s life has just begun."
-_names = [
-        "Hoshino",
-        "Nagasato",
-        "Yamaneko",
-        "Dokumitsu",
-        "Tachikawa group",
-        "Soudan-gumi",
-        "Kojima Kurosaki"
-    ]
+_names = ["Hoshino", "Nagasato", "Yamaneko", "Dokumitsu", "Tachikawa group", "Soudan-gumi", "Kojima Kurosaki"]
 
 chinese_dinner_jp = """
 1
@@ -543,17 +535,17 @@ response_S4B1 = """
 """
 
 chinese_dinner_data = {
-    'movie_name': _movie,
-    'description': _description,
-    'names': _names,
-    'original': chinese_dinner_jp,
-    'translated': chinese_dinner_en,
-    'expected_postprocess_differences': 13,
-    'expected_postprocess_unchanged': 51,
-    'response_map': {
+    "movie_name": _movie,
+    "description": _description,
+    "names": _names,
+    "original": chinese_dinner_jp,
+    "translated": chinese_dinner_en,
+    "expected_postprocess_differences": 13,
+    "expected_postprocess_unchanged": 51,
+    "response_map": {
         "Translate scene 1 batch 1": response_S1B1,
         "Translate scene 2 batch 1": response_S2B1,
         "Translate scene 3 batch 1": response_S3B1,
-        "Translate scene 4 batch 1": response_S4B1
-    }
+        "Translate scene 4 batch 1": response_S4B1,
+    },
 }

@@ -1,8 +1,10 @@
 import logging
+
 from PySubtitle.Helpers.Text import ExtractTag, ExtractTagList
 from PySubtitle.Substitutions import Substitutions
 
-def ExtractTagSafely(tag : str, text : str):
+
+def ExtractTagSafely(tag: str, text: str):
     """
     Extract a tag from text content, warn if there is an error
     """
@@ -12,7 +14,8 @@ def ExtractTagSafely(tag : str, text : str):
         logging.warning(f"Error extracting {tag} from translation: {e}")
         return text, None
 
-def ExtractTagListSafely(tag : str, text : str):
+
+def ExtractTagListSafely(tag: str, text: str):
     """
     Extract a tag list from text content, warn if there is an error
     """
@@ -23,10 +26,11 @@ def ExtractTagListSafely(tag : str, text : str):
         logging.warning(f"Error extracting {tag} from translation: {e}")
         return text, []
 
+
 class Translation:
-    def __init__(self, content : dict):
+    def __init__(self, content: dict):
         self.content = content or {}
-        translation_text = content.get('text')
+        translation_text = content.get("text")
         self._text, context = self.ParseTranslation(translation_text)
         self.content.update(context)
 
@@ -40,31 +44,31 @@ class Translation:
 
     @property
     def summary(self):
-        return self.content.get('summary')
+        return self.content.get("summary")
 
     @property
     def scene(self):
-        return self.content.get('scene')
+        return self.content.get("scene")
 
     @property
     def synopsis(self):
-        return self.content.get('synopsis')
+        return self.content.get("synopsis")
 
     @property
     def names(self):
-        return self.content.get('names')
+        return self.content.get("names")
 
     @property
     def reasoning(self):
-        return self.content.get('reasoning')
+        return self.content.get("reasoning")
 
     @property
     def finish_reason(self):
-        return self.content.get('finish_reason')
+        return self.content.get("finish_reason")
 
     @property
     def response_time(self):
-        return self.content.get('response_time')
+        return self.content.get("response_time")
 
     @property
     def reached_token_limit(self):
@@ -76,30 +80,30 @@ class Translation:
 
     @property
     def full_text(self):
-        return self.content.get('text', self._text)
+        return self.content.get("text", self._text)
 
-    def PerformSubstitutions(self, substitutions : Substitutions):
+    def PerformSubstitutions(self, substitutions: Substitutions):
         """
         Apply any text substitutions to summary, scene, names and synopsis if they exist.
 
         Does NOT apply them to the translation text.
         """
         if self.summary:
-            self.content['summary'] = substitutions.PerformSubstitutions(self.summary)
+            self.content["summary"] = substitutions.PerformSubstitutions(self.summary)
         if self.scene:
-            self.content['scene'] = substitutions.PerformSubstitutions(self.scene)
+            self.content["scene"] = substitutions.PerformSubstitutions(self.scene)
         if self.synopsis:
-            self.content['synopsis'] = substitutions.PerformSubstitutions(self.synopsis)
+            self.content["synopsis"] = substitutions.PerformSubstitutions(self.synopsis)
 
-    def FormatResponse(self, include_text : bool = True):
+    def FormatResponse(self, include_text: bool = True):
         """
         Format the response for display
         """
         if not self.content:
             return "No translation"
 
-        content_keys = [k for k in self.content.keys() if k not in ['text', 'summary', 'scene', 'names', 'reasoning']]
-        metadata = [ f"{k}: {self.content[k]}" for k in content_keys if self.content.get(k) ]
+        content_keys = [k for k in self.content.keys() if k not in ["text", "summary", "scene", "names", "reasoning"]]
+        metadata = [f"{k}: {self.content[k]}" for k in content_keys if self.content.get(k)]
 
         if self.scene:
             metadata.append(f"\nScene:\n{self.scene}")
@@ -112,12 +116,12 @@ class Translation:
             metadata.append(f"\n\nNames:\n{names}")
 
         if metadata:
-            metadata_text = '\n'.join(metadata)
+            metadata_text = "\n".join(metadata)
             return f"{metadata_text}\n\n{self.text}" if include_text else metadata_text
         else:
             return self.text if include_text else "No metadata available"
 
-    def ParseTranslation(self, text : str):
+    def ParseTranslation(self, text: str):
         """
         Extract tags from text body
         """
@@ -126,11 +130,5 @@ class Translation:
         text, scene = ExtractTagSafely("scene", text)
         text, names = ExtractTagListSafely("names", text)
 
-        context = {
-            'summary': summary,
-            'scene': scene,
-            'synopsis': synopsis,
-            'names': names
-        }
+        context = {"summary": summary, "scene": scene, "synopsis": synopsis, "names": names}
         return text, context
-

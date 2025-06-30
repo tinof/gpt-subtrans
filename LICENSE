@@ -282,7 +282,7 @@ NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==========================-----------------------------
-appdirs 
+appdirs
 ==========================---------------------------------
 
 The MIT License (MIT)
@@ -587,7 +587,7 @@ All additions and alterations are licensed under the Apache 2.0 License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
-   
+
 ==========================
 requests
 ==========================
@@ -1395,7 +1395,7 @@ Amazon Boto3
 ================================
  The PyInstaller licensing terms
 ================================
- 
+
 
 Copyright (c) 2010-2023, PyInstaller Development Team
 Copyright (c) 2005-2009, Giovanni Bajo
@@ -1417,8 +1417,8 @@ those combinations without any restriction coming from the use of those
 files. (The General Public License restrictions do apply in other respects;
 for example, they cover modification of the files, and distribution when
 not linked into a combined executable.)
- 
- 
+
+
 Bootloader and Related Files
 ----------------------------
 
@@ -1544,5 +1544,3 @@ Python is included in distributions in accordance with the PSF License Agreement
 
 8. By copying, installing or otherwise using Python 3.11.3, Licensee agrees
    to be bound by the terms and conditions of this License Agreement.
-   
-

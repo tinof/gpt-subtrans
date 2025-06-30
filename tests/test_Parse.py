@@ -1,9 +1,10 @@
 import unittest
 from enum import Enum
 
-from PySubtitle.Helpers import GetValueName, GetValueFromName
+from PySubtitle.Helpers import GetValueFromName, GetValueName
 from PySubtitle.Helpers.Parse import ParseDelayFromHeader, ParseNames
 from PySubtitle.Helpers.Tests import log_input_expected_result, log_test_name
+
 
 class TestParseDelayFromHeader(unittest.TestCase):
     test_cases = [
@@ -31,8 +32,8 @@ class TestParseNames(unittest.TestCase):
         (["John", "Jane", "Alice"], ["John", "Jane", "Alice"]),
         ("Mike, Murray, Mabel, Marge", ["Mike", "Murray", "Mabel", "Marge"]),
         ("", []),
-        ([] , []),
-        ([""], [])
+        ([], []),
+        ([""], []),
     ]
 
     def test_ParseNames(self):
@@ -42,6 +43,7 @@ class TestParseNames(unittest.TestCase):
                 result = ParseNames(value)
                 log_input_expected_result(value, expected, result)
                 self.assertSequenceEqual(result, expected)
+
 
 class TestParseValues(unittest.TestCase):
     class TestEnum(Enum):
@@ -64,7 +66,7 @@ class TestParseValues(unittest.TestCase):
         (TestEnum.Test2, "Test2"),
         (TestEnum.TestValue, "Test Value"),
         (TestEnum.TestExample, "Test Example"),
-        (TestObject("Test Object"), "Test Object")
+        (TestObject("Test Object"), "Test Object"),
     ]
 
     def test_GetValueName(self):
@@ -80,7 +82,7 @@ class TestParseValues(unittest.TestCase):
         ("Nonexistent Name", ["Test Name", "Another Name", "Yet Another Name"], "Default Value", "Default Value"),
         (34567, [12345, 34567, 98765], None, 34567),
         ("12345", [12345, 34567, 98765], None, 12345),
-        ("Test2", TestEnum, None, TestEnum.Test2)
+        ("Test2", TestEnum, None, TestEnum.Test2),
     ]
 
     def test_GetValueFromName(self):
@@ -91,5 +93,6 @@ class TestParseValues(unittest.TestCase):
                 log_input_expected_result((value, names, default), expected, result)
                 self.assertEqual(result, expected)
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     unittest.main()

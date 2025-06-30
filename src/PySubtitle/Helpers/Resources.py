@@ -1,7 +1,9 @@
-
 import os
 import sys
+
 import appdirs
+
+
 try:
     from importlib.resources import files
 except ImportError:
@@ -9,6 +11,7 @@ except ImportError:
     from importlib_resources import files
 
 config_dir = appdirs.user_config_dir("GPTSubtrans", "MachineWrapped", roaming=True)
+
 
 def GetResourcePath(relative_path, *parts):
     """
@@ -20,7 +23,7 @@ def GetResourcePath(relative_path, *parts):
 
     try:
         # Try to get resource from the installed package
-        resource_path = files('PySubtitle').joinpath(relative_path)
+        resource_path = files("PySubtitle").joinpath(relative_path)
         if parts:
             for part in parts:
                 resource_path = resource_path.joinpath(part)
@@ -28,4 +31,3 @@ def GetResourcePath(relative_path, *parts):
     except (ModuleNotFoundError, FileNotFoundError, AttributeError):
         # Fallback for development mode - look relative to current working directory
         return os.path.join(os.path.abspath("."), relative_path or "", *parts)
-

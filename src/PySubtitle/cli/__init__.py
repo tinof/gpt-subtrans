@@ -8,13 +8,5 @@ from .gpt import main as gpt_main
 from .llm import main as llm_main
 from .mistral import main as mistral_main
 
-__all__ = [
-    'azure_main',
-    'bedrock_main',
-    'claude_main',
-    'deepseek_main',
-    'gemini_main',
-    'gpt_main',
-    'llm_main',
-    'mistral_main'
-]
+
+__all__ = ["azure_main", "bedrock_main", "claude_main", "deepseek_main", "gemini_main", "gpt_main", "llm_main", "mistral_main"]

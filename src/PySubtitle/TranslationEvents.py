@@ -9,6 +9,7 @@ class SimpleEvents:
             self._handlers[name] = EventHandler()
         return self._handlers[name]
 
+
 class EventHandler:
     """Simple event handler that supports += and -= operators"""
 
@@ -32,9 +33,11 @@ class EventHandler:
             except Exception as e:
                 # Log the error but don't stop other callbacks
                 import logging
+
                 logging.warning(f"Error in event callback: {e}")
+
 
 class TranslationEvents(SimpleEvents):
     """Event system for translation progress notifications"""
-    pass
 
+    pass

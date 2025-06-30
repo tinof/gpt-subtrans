@@ -1,17 +1,18 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
 
-from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.Helpers.Subtitles import ResyncTranslatedLines
+from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.SubtitleLine import SubtitleLine
 
+
 class SubtitleScene:
-    def __init__(self, dct = None):
+    def __init__(self, dct=None):
         dct = dct or {}
-        self.number = dct.get('scene') or dct.get('number')
-        self.context = dct.get('context', {})
-        self._batches = dct.get('batches', [])
-        self.errors = dct.get('errors', [])
+        self.number = dct.get("scene") or dct.get("number")
+        self.context = dct.get("context", {})
+        self._batches = dct.get("batches", [])
+        self.errors = dct.get("errors", [])
 
     def __str__(self) -> str:
         return f"SubtitleScene {self.number} with {self.size} batches and {self.linecount} lines"
@@ -33,11 +34,11 @@ class SubtitleScene:
 
     @property
     def originals(self) -> list[SubtitleLine]:
-        return [ line for batch in self.batches for line in batch.originals ] if self.batches else None
+        return [line for batch in self.batches for line in batch.originals] if self.batches else None
 
     @property
     def translated(self) -> list[SubtitleLine]:
-        return [ line for batch in self.batches for line in batch.translated ] if self.batches else None
+        return [line for batch in self.batches for line in batch.translated] if self.batches else None
 
     @property
     def first_line_number(self):
@@ -57,14 +58,14 @@ class SubtitleScene:
 
     @property
     def summary(self):
-        return self.GetContext('summary')
+        return self.GetContext("summary")
 
     @summary.setter
     def summary(self, value):
-        self.AddContext('summary', value)
+        self.AddContext("summary", value)
 
     @batches.setter
-    def batches(self, value : list[SubtitleBatch]):
+    def batches(self, value: list[SubtitleBatch]):
         if not isinstance(value, list) or not all(isinstance(v, SubtitleBatch) for v in value):
             raise ValueError("Batches must be a list of SubtitleBatch")
 
@@ -81,10 +82,7 @@ class SubtitleScene:
         self._batches.append(batch)
 
     def AddNewBatch(self):
-        batch = SubtitleBatch({
-            'scene': self.number,
-            'number': len(self.batches) + 1
-        })
+        batch = SubtitleBatch({"scene": self.number, "number": len(self.batches) + 1})
         self._batches.append(batch)
         return self._batches[-1]
 
@@ -112,13 +110,13 @@ class SubtitleScene:
         """
         Merge another scene into this scene
         """
-        scenes = [ self ] + merged_scenes
+        scenes = [self] + merged_scenes
         self.summary = "\n".join(scene.summary for scene in scenes if scene.summary)
-        self._batches = [ batch for scene in scenes for batch in scene.batches ]
+        self._batches = [batch for scene in scenes for batch in scene.batches]
 
         self._renumber_batches()
 
-    def MergeBatches(self, batch_numbers : list[int]):
+    def MergeBatches(self, batch_numbers: list[int]):
         """
         Merge several batches in the scene together
         """
@@ -126,7 +124,7 @@ class SubtitleScene:
         if batch_numbers != list(range(batch_numbers[0], batch_numbers[0] + len(batch_numbers))):
             raise ValueError("Batch numbers to be merged are not sequential")
 
-        batches = [ batch for batch in self.batches if batch.number in batch_numbers]
+        batches = [batch for batch in self.batches if batch.number in batch_numbers]
         if len(batches) != len(batch_numbers):
             raise ValueError(f"Could not find batches {str(batch_numbers)} in scene {self.number}")
 
@@ -147,7 +145,7 @@ class SubtitleScene:
         start_index = self._batches.index(batches[0])
         end_index = self._batches.index(batches[-1])
 
-        self._batches = self._batches[:start_index] + [merged_batch] + self._batches[end_index+1:]
+        self._batches = self._batches[:start_index] + [merged_batch] + self._batches[end_index + 1 :]
 
         self._renumber_batches()
 
@@ -165,11 +163,9 @@ class SubtitleScene:
         if split_index <= 0:
             raise ValueError(f"Line {line_number} not found in batch (unexpectedly)")
 
-        new_batch = SubtitleBatch({
-            'scene': batch.scene,
-            'number': batch.number + 1,
-            'originals': batch.originals[split_index:]
-        })
+        new_batch = SubtitleBatch(
+            {"scene": batch.scene, "number": batch.number + 1, "originals": batch.originals[split_index:]}
+        )
 
         batch.originals = batch.originals[:split_index]
 
@@ -191,7 +187,7 @@ class SubtitleScene:
                 batch.translated = []
 
         batch_index = self._batches.index(batch)
-        self._batches = self._batches[:batch_index + 1] + [new_batch] + self._batches[batch_index + 1:]
+        self._batches = self._batches[: batch_index + 1] + [new_batch] + self._batches[batch_index + 1 :]
 
         self._renumber_batches()
 
@@ -226,11 +222,11 @@ class SubtitleScene:
             self.SplitBatch(batch_number, split_line)
 
     def _renumber_batches(self):
-        for number, batch in enumerate(self._batches, start = 1):
+        for number, batch in enumerate(self._batches, start=1):
             batch.number = number
 
 
-def UnbatchScenes(scenes : list[SubtitleScene]):
+def UnbatchScenes(scenes: list[SubtitleScene]):
     """
     Reconstruct a sequential subtitle from multiple scenes
     """

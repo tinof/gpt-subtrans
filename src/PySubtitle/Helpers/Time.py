@@ -1,5 +1,7 @@
 import datetime
+
 import regex
+
 
 delim = r"[,.:，．。：]"
 
@@ -14,11 +16,10 @@ timestamp_patterns = [
     r"^(?P<seconds>\d{1,2})(?:,(?P<milliseconds>\d{3}))?$",
 ]
 
-re_timestamps = [
-    regex.compile(pattern) for pattern in timestamp_patterns
-]
+re_timestamps = [regex.compile(pattern) for pattern in timestamp_patterns]
 
-def GetTimeDelta(time : datetime.timedelta | str | None, raise_exception = False) -> datetime.timedelta:
+
+def GetTimeDelta(time: datetime.timedelta | str | None, raise_exception=False) -> datetime.timedelta:
     """
     Ensure the input value is a timedelta, as best we can
     """
@@ -46,7 +47,8 @@ def GetTimeDelta(time : datetime.timedelta | str | None, raise_exception = False
 
     return error
 
-def TimeDeltaToText(time: datetime.timedelta, include_milliseconds = True) -> str:
+
+def TimeDeltaToText(time: datetime.timedelta, include_milliseconds=True) -> str:
     """
     Convert a timedelta to a minimal string representation, adhering to specific formatting rules:
     - Hours, minutes, and seconds may appear with leading zeros only as required.
@@ -73,4 +75,3 @@ def TimeDeltaToText(time: datetime.timedelta, include_milliseconds = True) -> st
         time_str += f",{milliseconds:03d}"
 
     return time_str.format(hours, minutes, seconds, milliseconds)
-

@@ -2,13 +2,14 @@ import importlib.util
 import logging
 import os
 
+
 if not importlib.util.find_spec("google"):
     logging.info("Google SDK (google-genai) is not installed. Gemini provider will not be available")
 else:
     try:
         from google import genai
-        from google.genai.types import ListModelsConfig
         from google.api_core.exceptions import FailedPrecondition
+        from google.genai.types import ListModelsConfig
 
         from PySubtitle.Helpers import GetEnvFloat
         from PySubtitle.Providers.Gemini.GeminiClient import GeminiClient
@@ -30,52 +31,68 @@ else:
             or a project on <a href="https://console.cloud.google.com/">Google Cloud Platform</a> and enable Generative Language API access.</p>
             """
 
-            def __init__(self, settings : dict):
-                super().__init__(self.name, {
-                    "api_key": settings.get('api_key') or os.getenv('GEMINI_API_KEY'),
-                    "model": settings.get('model') or os.getenv('GEMINI_MODEL'),
-                    'temperature': settings.get('temperature', GetEnvFloat('GEMINI_TEMPERATURE', 0.0)),
-                    'rate_limit': settings.get('rate_limit', GetEnvFloat('GEMINI_RATE_LIMIT', 60.0))
-                })
+            def __init__(self, settings: dict):
+                super().__init__(
+                    self.name,
+                    {
+                        "api_key": settings.get("api_key") or os.getenv("GEMINI_API_KEY"),
+                        "model": settings.get("model") or os.getenv("GEMINI_MODEL"),
+                        "temperature": settings.get("temperature", GetEnvFloat("GEMINI_TEMPERATURE", 0.0)),
+                        "rate_limit": settings.get("rate_limit", GetEnvFloat("GEMINI_RATE_LIMIT", 60.0)),
+                    },
+                )
 
-                self.refresh_when_changed = ['api_key', 'model']
+                self.refresh_when_changed = ["api_key", "model"]
                 self.gemini_models = []
 
             @property
             def api_key(self):
-                return self.settings.get('api_key')
+                return self.settings.get("api_key")
 
-            def GetTranslationClient(self, settings : dict) -> TranslationClient:
+            def GetTranslationClient(self, settings: dict) -> TranslationClient:
                 client_settings = self.settings.copy()
                 client_settings.update(settings)
-                client_settings.update({
-                    'model': self._get_true_name(self.selected_model),
-                    'supports_conversation': False,         # Actually it does support conversation
-                    'supports_system_messages': False,       # This is what it doesn't support
-                    'supports_system_prompt': True
-                    })
+                client_settings.update(
+                    {
+                        "model": self._get_true_name(self.selected_model),
+                        "supports_conversation": False,  # Actually it does support conversation
+                        "supports_system_messages": False,  # This is what it doesn't support
+                        "supports_system_prompt": True,
+                    }
+                )
                 return GeminiClient(client_settings)
 
             def GetOptions(self) -> dict:
                 options = {
-                    'api_key': (str, "A Google Gemini API key is required to use this provider (https://makersuite.google.com/app/apikey)")
+                    "api_key": (
+                        str,
+                        "A Google Gemini API key is required to use this provider (https://makersuite.google.com/app/apikey)",
+                    )
                 }
 
                 if self.api_key:
                     try:
                         models = self.available_models
                         if models:
-                            options.update({
-                                'model': (models, "AI model to use as the translator" if models else "Unable to retrieve models"),
-                                'temperature': (float, "Amount of random variance to add to translations. Generally speaking, none is best"),
-                                'rate_limit': (float, "Maximum API requests per minute.")
-                            })
+                            options.update(
+                                {
+                                    "model": (
+                                        models,
+                                        "AI model to use as the translator" if models else "Unable to retrieve models",
+                                    ),
+                                    "temperature": (
+                                        float,
+                                        "Amount of random variance to add to translations. Generally speaking, none is best",
+                                    ),
+                                    "rate_limit": (float, "Maximum API requests per minute."),
+                                }
+                            )
 
                         else:
-                            options['model'] = (["Unable to retrieve models"], "Check API key is authorized and try again")
+                            options["model"] = (["Unable to retrieve models"], "Check API key is authorized and try again")
 
                     except FailedPrecondition as e:
-                        options['model'] = (["Unable to access the Gemini API"], str(e))
+                        options["model"] = (["Unable to access the Gemini API"], str(e))
 
                 return options
 
@@ -83,7 +100,7 @@ else:
                 if not self.gemini_models:
                     self.gemini_models = self._get_gemini_models()
 
-                models = [ m.display_name for m in self.gemini_models if m.display_name.find("Vision") < 0 ]
+                models = [m.display_name for m in self.gemini_models if m.display_name.find("Vision") < 0]
 
                 return models or []
 
@@ -109,17 +126,17 @@ else:
                     return []
 
                 try:
-                    gemini_client = genai.Client(api_key=self.api_key, http_options={'api_version': 'v1alpha'})
+                    gemini_client = genai.Client(api_key=self.api_key, http_options={"api_version": "v1alpha"})
                     config = ListModelsConfig(query_base=True)
                     all_models = gemini_client.models.list(config=config)
 
-                    return [ m for m in all_models if 'generateContent' in m.supported_actions ]
+                    return [m for m in all_models if "generateContent" in m.supported_actions]
 
                 except Exception as e:
                     logging.error(f"Unable to retrieve Gemini model list: {str(e)}")
                     return []
 
-            def _get_true_name(self, name : str) -> str:
+            def _get_true_name(self, name: str) -> str:
                 if not self.gemini_models:
                     self.gemini_models = self._get_gemini_models()
 
@@ -133,11 +150,12 @@ else:
                 """
                 If user has set a rate limit don't attempt parallel requests to make sure we respect it
                 """
-                if self.settings.get('rate_limit', 0.0) != 0.0:
+                if self.settings.get("rate_limit", 0.0) != 0.0:
                     return False
 
                 return True
 
     except ImportError:
-        logging.info("Latest Google AI SDK (google-genai) is not installed. Gemini provider will not be available. Run installer or `pip install google-genai` to fix.")
-
+        logging.info(
+            "Latest Google AI SDK (google-genai) is not installed. Gemini provider will not be available. Run installer or `pip install google-genai` to fix."
+        )

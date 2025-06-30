@@ -1,16 +1,19 @@
-from datetime import timedelta
 import logging
+from datetime import timedelta
 from os import linesep
+
 import srt
 
 from PySubtitle.Helpers.Time import GetTimeDelta, TimeDeltaToText
+
 
 class SubtitleLine:
     """
     Represents a single line, with a number and start and end times plus original text
     and (optionally) an associated translation.
     """
-    def __init__(self, line : srt.Subtitle | str, translation : str = None, original : str = None):
+
+    def __init__(self, line: srt.Subtitle | str, translation: str = None, original: str = None):
         if isinstance(line, SubtitleLine):
             self._item = line._item
             self._duration = line._duration
@@ -44,7 +47,7 @@ class SubtitleLine:
 
     @property
     def text_normalized(self) -> str:
-        return self.text.replace(linesep, '\n') if self.text else None
+        return self.text.replace(linesep, "\n") if self.text else None
 
     @property
     def start(self) -> timedelta:
@@ -104,28 +107,28 @@ class SubtitleLine:
         return self._item
 
     @item.setter
-    def item(self, item : srt.Subtitle | str):
-        self._item : srt.Subtitle = CreateSrtSubtitle(item)
+    def item(self, item: srt.Subtitle | str):
+        self._item: srt.Subtitle = CreateSrtSubtitle(item)
         self._duration = None
 
     @number.setter
-    def number(self, value : int):
+    def number(self, value: int):
         if self._item:
             self._item.index = value
 
     @text.setter
-    def text(self, text : str):
+    def text(self, text: str):
         if self._item:
             self._item.content = text
 
     @start.setter
-    def start(self, time : timedelta | str):
+    def start(self, time: timedelta | str):
         if self._item:
             self._item.start = GetTimeDelta(time)
             self._duration = None
 
     @end.setter
-    def end(self, time : timedelta | str):
+    def end(self, time: timedelta | str):
         if self._item:
             self._item.end = GetTimeDelta(time)
             self._duration = None
@@ -135,11 +138,11 @@ class SubtitleLine:
         self.translation = SubtitleLine(translated).text
 
     @classmethod
-    def Construct(cls, number : int, start : timedelta | str, end : timedelta | str, text : str, original : str = None):
+    def Construct(cls, number: int, start: timedelta | str, end: timedelta | str, text: str, original: str = None):
         number = int(number) if number else None
-        start : timedelta = GetTimeDelta(start)
-        end : timedelta = GetTimeDelta(end)
-        text : str = srt.make_legal_content(text.strip()) if text else ""
+        start: timedelta = GetTimeDelta(start)
+        end: timedelta = GetTimeDelta(end)
+        text: str = srt.make_legal_content(text.strip()) if text else ""
         original = srt.make_legal_content(original.strip()) if original else ""
         item = srt.Subtitle(number, start, end, text)
         return SubtitleLine(item, original=original)
@@ -150,11 +153,12 @@ class SubtitleLine:
         Construct a SubtitleLine from a dictionary.
         """
         return SubtitleLine.Construct(
-            values.get('number') or values.get('index'),
-            values.get('start'),
-            values.get('end'),
-            values.get('body') or values.get('original'),
-            values.get('original'))
+            values.get("number") or values.get("index"),
+            values.get("start"),
+            values.get("end"),
+            values.get("body") or values.get("original"),
+            values.get("original"),
+        )
 
     @classmethod
     def FromMatch(cls, match):
@@ -171,11 +175,12 @@ class SubtitleLine:
 
         return SubtitleLine.Construct(number, start.strip(), end.strip(), body.strip())
 
-def CreateSrtSubtitle(item : srt.Subtitle | SubtitleLine | str) -> srt.Subtitle:
+
+def CreateSrtSubtitle(item: srt.Subtitle | SubtitleLine | str) -> srt.Subtitle:
     """
     Try to construct an srt.Subtitle from the argument
     """
-    if hasattr(item, 'item'):
+    if hasattr(item, "item"):
         item = item.item
 
     if not isinstance(item, srt.Subtitle):

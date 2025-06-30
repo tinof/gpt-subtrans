@@ -1,23 +1,25 @@
 import json
-import os
 import logging
+import os
 import threading
+
 from PySubtitle.Helpers import GetOutputPath
 from PySubtitle.Options import Options
+from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.SubtitleError import SubtitleError, TranslationAbortedError
 from PySubtitle.SubtitleFile import SubtitleFile
-
-from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.SubtitleScene import SubtitleScene
 from PySubtitle.SubtitleSerialisation import SubtitleDecoder, SubtitleEncoder
 from PySubtitle.SubtitleTranslator import SubtitleTranslator
 from PySubtitle.TranslationEvents import TranslationEvents
 
-default_encoding = os.getenv('DEFAULT_ENCODING', 'utf-8')
+
+default_encoding = os.getenv("DEFAULT_ENCODING", "utf-8")
+
 
 class SubtitleProject:
-    def __init__(self, options : Options, subtitles : SubtitleFile = None):
-        self.subtitles : SubtitleFile = subtitles
+    def __init__(self, options: Options, subtitles: SubtitleFile = None):
+        self.subtitles: SubtitleFile = subtitles
         self.events = TranslationEvents()
         self.projectfile = None
         self.read_project = False
@@ -33,7 +35,7 @@ class SubtitleProject:
     @property
     def target_language(self):
         return self.subtitles.target_language if self.subtitles else None
-    
+
     @property
     def task_type(self):
         return self.subtitles.task_type if self.subtitles else None
@@ -47,7 +49,7 @@ class SubtitleProject:
         with self.lock:
             return True if self.subtitles and self.subtitles.translated else False
 
-    def InitialiseProject(self, filepath : str, outputpath : str = None, reload_subtitles : bool = False):
+    def InitialiseProject(self, filepath: str, outputpath: str = None, reload_subtitles: bool = False):
         """
         Initialize the project by either loading an existing project file or creating a new one.
         Load the subtitles to be translated, either from the project file or the source file.
@@ -77,7 +79,7 @@ class SubtitleProject:
 
             if subtitles:
                 outputpath = outputpath or GetOutputPath(self.projectfile, subtitles.target_language)
-                sourcepath = subtitles.sourcepath                
+                sourcepath = subtitles.sourcepath
                 logging.info("Project file loaded")
 
             if subtitles.scenes:
@@ -86,7 +88,7 @@ class SubtitleProject:
                     logging.info("Reloading subtitles from the source file")
 
             else:
-                logging.error(f"Unable to read project file, starting afresh")
+                logging.error("Unable to read project file, starting afresh")
                 self.load_subtitles = True
 
         if self.load_subtitles:
@@ -109,7 +111,7 @@ class SubtitleProject:
 
         self.needs_writing = self.write_project
 
-    def SaveOriginal(self, outputpath : str = None):
+    def SaveOriginal(self, outputpath: str = None):
         """
         Write the original subtitles to a file
         """
@@ -120,7 +122,7 @@ class SubtitleProject:
         except Exception as e:
             logging.error(f"Unable to save original subtitles: {e}")
 
-    def SaveTranslation(self, outputpath : str = None):
+    def SaveTranslation(self, outputpath: str = None):
         """
         Write output file
         """
@@ -133,7 +135,7 @@ class SubtitleProject:
 
     def GetProjectFilepath(self, filepath):
         path, ext = os.path.splitext(filepath)
-        filepath = filepath if ext == '.subtrans' else f"{path}.subtrans"
+        filepath = filepath if ext == ".subtrans" else f"{path}.subtrans"
         return os.path.normpath(filepath)
 
     def GetBackupFilepath(self, filepath):
@@ -150,7 +152,7 @@ class SubtitleProject:
 
         return self.subtitles
 
-    def WriteProjectFile(self, projectfile = None):
+    def WriteProjectFile(self, projectfile=None):
         """
         Write a set of subtitles to a project file
         """
@@ -190,7 +192,7 @@ class SubtitleProject:
                 backupfile = self.GetBackupFilepath(self.projectfile)
                 self.subtitles.SaveProjectFile(backupfile, encoder_class=SubtitleEncoder)
 
-    def ReadProjectFile(self, filepath = None):
+    def ReadProjectFile(self, filepath=None):
         """
         Load scenes, subtitles and context from a project file
         """
@@ -199,7 +201,7 @@ class SubtitleProject:
             with self.lock:
                 logging.info(f"Reading project data from {str(filepath)}")
 
-                with open(filepath, 'r', encoding=default_encoding, newline='') as f:
+                with open(filepath, encoding=default_encoding, newline="") as f:
                     subtitles: SubtitleFile = json.load(f, cls=SubtitleDecoder)
 
                 subtitles.Sanitise()
@@ -226,7 +228,7 @@ class SubtitleProject:
         """
         Return a dictionary of non-empty settings from the project file
         """
-        return { key : value for key, value in self.subtitles.settings.items() if value }
+        return {key: value for key, value in self.subtitles.settings.items() if value}
 
     def UpdateProjectSettings(self, settings: dict | Options):
         """
@@ -249,7 +251,7 @@ class SubtitleProject:
             self.subtitles.UpdateOutputPath()
             self.needs_writing = True
 
-    def TranslateSubtitles(self, translator : SubtitleTranslator):
+    def TranslateSubtitles(self, translator: SubtitleTranslator):
         """
         Use the translation provider to translate a project
         """
@@ -274,7 +276,7 @@ class SubtitleProject:
                 self.SaveTranslation()
 
         except TranslationAbortedError:
-            logging.info(f"Translation aborted")
+            logging.info("Translation aborted")
 
         except Exception as e:
             if self.subtitles and self.save_subtitles and translator.stop_on_error:
@@ -283,7 +285,13 @@ class SubtitleProject:
             logging.error(f"Failed to translate subtitles: {str(e)}")
             raise
 
-    def TranslateScene(self, translator : SubtitleTranslator, scene_number : int, batch_numbers : list[int] = None, line_numbers : list[int] = None):
+    def TranslateScene(
+        self,
+        translator: SubtitleTranslator,
+        scene_number: int,
+        batch_numbers: list[int] = None,
+        line_numbers: list[int] = None,
+    ):
         """
         Pass batches of subtitles to the translation engine.
         """
@@ -294,7 +302,7 @@ class SubtitleProject:
         translator.events.batch_translated += self._on_batch_translated
 
         try:
-            scene : SubtitleScene = self.subtitles.GetScene(scene_number)
+            scene: SubtitleScene = self.subtitles.GetScene(scene_number)
 
             scene.errors = []
 
@@ -312,11 +320,13 @@ class SubtitleProject:
             translator.events.preprocessed -= self._on_preprocessed
             translator.events.batch_translated -= self._on_batch_translated
 
-    def ReparseBatchTranslation(self, translator : SubtitleTranslator, scene_number : int, batch_number : int, line_numbers : list[int] = None):
+    def ReparseBatchTranslation(
+        self, translator: SubtitleTranslator, scene_number: int, batch_number: int, line_numbers: list[int] = None
+    ):
         """
         Reparse the translation of a batch of subtitles
         """
-        batch : SubtitleBatch = self.subtitles.GetBatch(scene_number, batch_number)
+        batch: SubtitleBatch = self.subtitles.GetBatch(scene_number, batch_number)
 
         if not batch:
             raise SubtitleError(f"Unable to find batch {batch_number} in scene {scene_number}")
@@ -331,18 +341,18 @@ class SubtitleProject:
 
         return batch
 
-    def _update_project_mode(self, options : Options):
+    def _update_project_mode(self, options: Options):
         """
         Update the project mode based on the settings... yes, this is a dumb system
         """
-        project_mode = options.get('project', '')
+        project_mode = options.get("project", "")
         if project_mode:
             project_mode = project_mode.lower()
 
         self.read_project = project_mode in ["true", "read", "resume", "retranslate", "reparse"]
         self.write_project = project_mode in ["true", "write", "preview", "resume", "retranslate", "reparse"]
         self.load_subtitles = project_mode is None or project_mode in ["true", "write", "reload", "preview"]
-        self.save_subtitles = project_mode not in ['preview', 'test']
+        self.save_subtitles = project_mode not in ["preview", "test"]
 
         options.add("preview", project_mode in ["preview"])
         options.add("resume", project_mode in ["resume"])

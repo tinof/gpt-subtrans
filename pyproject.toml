@@ -61,3 +61,117 @@ azure-subtrans = "PySubtitle.cli:azure_main"
 
 [tool.setuptools.package-data]
 PySubtitle = ["py.typed", "instructions/*.txt"]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".git-rewrite",
+    ".hg",
+    ".ipynb_checkpoints",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".pyenv",
+    ".pytest_cache",
+    ".pytype",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    ".vscode",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "site-packages",
+    "venv",
+]
+
+# Same as Black.
+line-length = 127
+indent-width = 4
+
+# Assume Python 3.10 (minimum supported version)
+target-version = "py310"
+
+[tool.ruff.lint]
+# Enable pycodestyle (`E`), Pyflakes (`F`), pyupgrade (`UP`),
+# flake8-bugbear (`B`), flake8-simplify (`SIM`), and isort (`I`)
+select = [
+    "E4", "E7", "E9",  # pycodestyle errors
+    "F",               # Pyflakes
+    "UP",              # pyupgrade
+    "B",               # flake8-bugbear
+    "SIM",             # flake8-simplify
+    "I",               # isort
+    "C90",             # mccabe complexity
+    "N",               # pep8-naming
+    "W",               # pycodestyle warnings
+]
+
+ignore = [
+    "E501",    # Line too long (handled by formatter)
+    "E203",    # Whitespace before ':' (not PEP 8 compliant)
+    "N806",    # Variable in function should be lowercase (too strict for our codebase)
+    "N803",    # Argument name should be lowercase (too strict for our codebase)
+    "N802",    # Function name should be lowercase (too strict for our codebase)
+    "N801",    # Class name should use CapWords convention (too strict for our codebase)
+    "N999",    # Invalid module name (our modules use PascalCase)
+    "W191",    # Indentation contains tabs (some files have mixed indentation)
+    "E741",    # Ambiguous variable name (common in loops)
+    "B904",    # Within except clause, raise exceptions with raise ... from err (too strict)
+    "C901",    # Function is too complex (existing complex functions)
+    "B007",    # Loop control variable not used within loop body (common pattern)
+    "SIM102",  # Use single if statement (sometimes nested is clearer)
+    "SIM103",  # Return condition directly (sometimes explicit is clearer)
+    "SIM118",  # Use key in dict instead of key in dict.keys() (sometimes .keys() is intentional)
+    "F541",    # f-string without placeholders (sometimes used for consistency)
+    "SIM210",  # Use bool(...) instead of True if ... else False (sometimes explicit is clearer)
+    "SIM117",  # Use single with statement (sometimes nested is clearer)
+    "B026",    # Star-arg unpacking after keyword argument (existing pattern)
+    "B006",    # Mutable default arguments (existing pattern)
+    "B023",    # Function definition does not bind loop variable (complex to fix)
+]
+
+# Allow fix for all enabled rules (when `--fix`) is provided.
+fixable = ["ALL"]
+unfixable = []
+
+# Allow unused variables when underscore-prefixed.
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]  # Allow unused imports in __init__.py files
+"tests/*" = ["F841"]      # Allow unused variables in tests
+"**/TestData/*" = ["ALL"] # Ignore all rules in test data files
+"src/PySubtitle/Providers/Provider_*.py" = ["F401"]  # Allow unused imports in provider files (conditional imports)
+
+[tool.ruff.lint.mccabe]
+max-complexity = 15
+
+[tool.ruff.format]
+# Like Black, use double quotes for strings.
+quote-style = "double"
+
+# Like Black, indent with spaces, rather than tabs.
+indent-style = "space"
+
+# Like Black, respect magic trailing commas.
+skip-magic-trailing-comma = false
+
+# Like Black, automatically detect the appropriate line ending.
+line-ending = "auto"
+
+# Enable auto-formatting of code examples in docstrings.
+docstring-code-format = false
+
+[tool.ruff.lint.isort]
+known-first-party = ["PySubtitle"]
+force-single-line = false
+lines-after-imports = 2

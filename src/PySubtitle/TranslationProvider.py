@@ -1,17 +1,20 @@
 import importlib
 import logging
 import pkgutil
+
 from PySubtitle.Options import Options
 from PySubtitle.TranslationClient import TranslationClient
+
 
 class TranslationProvider:
     """
     Base class for translation service providers.
     """
-    def __init__(self, name : str, settings : dict):
-        self.name : str = name
-        self.settings : dict = settings
-        self._available_models : list[str] = []
+
+    def __init__(self, name: str, settings: dict):
+        self.name: str = name
+        self.settings: dict = settings
+        self._available_models: list[str] = []
         self.refresh_when_changed = []
         self.validation_message = None
 
@@ -30,7 +33,7 @@ class TranslationProvider:
         """
         The currently selected model for the provider
         """
-        name : str = self.settings.get('model')
+        name: str = self.settings.get("model")
         return name.strip() if name else None
 
     @property
@@ -58,7 +61,7 @@ class TranslationProvider:
         """
         return None
 
-    def GetTranslationClient(self, settings : dict) -> TranslationClient:
+    def GetTranslationClient(self, settings: dict) -> TranslationClient:
         """
         Returns a new instance of the translation client for this provider
         """
@@ -70,7 +73,7 @@ class TranslationProvider:
         """
         return True
 
-    def UpdateSettings(self, settings : dict | Options):
+    def UpdateSettings(self, settings: dict | Options):
         """
         Update the settings for the provider
         """
@@ -101,12 +104,12 @@ class TranslationProvider:
             except Exception as e:
                 logging.error(f"Error importing providers: {str(e)}")
 
-        providers = { provider.name : provider for provider in cls.__subclasses__() }
+        providers = {provider.name: provider for provider in cls.__subclasses__()}
 
         return providers
 
     @classmethod
-    def get_provider(cls, options : Options):
+    def get_provider(cls, options: Options):
         """
         Create a new instance of the provider with the given name
         """
@@ -118,7 +121,7 @@ class TranslationProvider:
 
         provider_settings = options.current_provider_settings
 
-        translation_provider : TranslationProvider = cls.create_provider(options.provider, provider_settings)
+        translation_provider: TranslationProvider = cls.create_provider(options.provider, provider_settings)
         if not translation_provider:
             raise ValueError(f"Unable to create translation provider '{options.provider}'")
 
@@ -140,13 +143,13 @@ class TranslationProvider:
         Dynamically import all modules in the providers package.
         """
         package = importlib.import_module(package_name)
-        for loader, module_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + '.'):
+        for loader, module_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
             logging.debug(f"Importing provider: {module_name}")
             importlib.import_module(module_name)
 
     @classmethod
-    def get_available_models(cls, options : Options):
-        """ Get the available models for the selected provider """
+    def get_available_models(cls, options: Options):
+        """Get the available models for the selected provider"""
         if not isinstance(options, Options):
             raise ValueError("Options object required")
 

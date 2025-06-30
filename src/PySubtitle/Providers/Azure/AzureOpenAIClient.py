@@ -1,64 +1,74 @@
 import logging
-import openai
 import time
+
+import openai
+
 
 try:
     import openai
 
-    from PySubtitle.Helpers.Parse import ParseDelayFromHeader
     from PySubtitle.Helpers import FormatMessages
+    from PySubtitle.Helpers.Parse import ParseDelayFromHeader
+    from PySubtitle.SubtitleError import TranslationImpossibleError, TranslationResponseError
     from PySubtitle.Translation import Translation
     from PySubtitle.TranslationClient import TranslationClient
     from PySubtitle.TranslationPrompt import TranslationPrompt
-    from PySubtitle.SubtitleError import TranslationImpossibleError, TranslationResponseError
 
     class AzureOpenAIClient(TranslationClient):
         """
         Handles communication with AzureOpenAI to request translations
         """
-        def __init__(self, settings : dict):
+
+        def __init__(self, settings: dict):
             super().__init__(settings)
 
             if not hasattr(openai, "AzureOpenAI"):
                 raise TranslationImpossibleError("The OpenAI library is out of date and must be updated")
 
             if not self.api_key:
-                raise TranslationImpossibleError('API key must be set in .env or provided as an argument')
+                raise TranslationImpossibleError("API key must be set in .env or provided as an argument")
 
             if not self.api_base:
-                raise TranslationImpossibleError('API base must be set in .env or provided as an argument')
+                raise TranslationImpossibleError("API base must be set in .env or provided as an argument")
 
             if not self.api_version:
-                raise TranslationImpossibleError('API version must be set in .env or provided as an argument')
+                raise TranslationImpossibleError("API version must be set in .env or provided as an argument")
 
             if not self.deployment_name:
-                raise TranslationImpossibleError('Deployment name must be set in .env or provided as an argument')
+                raise TranslationImpossibleError("Deployment name must be set in .env or provided as an argument")
 
-            logging.info(f"Translating with Azure OpenAI deployment {self.deployment_name}, API-version {self.api_version}, API Base: {self.api_base}")
+            logging.info(
+                f"Translating with Azure OpenAI deployment {self.deployment_name}, API-version {self.api_version}, API Base: {self.api_base}"
+            )
 
-            self.client = openai.AzureOpenAI(azure_endpoint=self.api_base, api_version=self.api_version, azure_deployment=self.deployment_name, api_key=self.api_key)
+            self.client = openai.AzureOpenAI(
+                azure_endpoint=self.api_base,
+                api_version=self.api_version,
+                azure_deployment=self.deployment_name,
+                api_key=self.api_key,
+            )
 
         @property
         def api_key(self):
-            return self.settings.get('api_key')
+            return self.settings.get("api_key")
 
         @property
         def api_base(self):
-            return self.settings.get('api_base')
+            return self.settings.get("api_base")
 
         @property
         def api_version(self):
-            return self.settings.get('api_version')
+            return self.settings.get("api_version")
 
         @property
         def deployment_name(self):
-            return self.settings.get('deployment_name')
+            return self.settings.get("deployment_name")
 
         @property
         def rate_limit(self):
-            return self.settings.get('rate_limit')
+            return self.settings.get("rate_limit")
 
-        def _request_translation(self, prompt : TranslationPrompt, temperature : float = None) -> Translation:
+        def _request_translation(self, prompt: TranslationPrompt, temperature: float = None) -> Translation:
             """
             Request a translation based on the provided prompt
             """
@@ -71,7 +81,7 @@ try:
 
             return translation
 
-        def _send_messages(self, messages : list[str], temperature):
+        def _send_messages(self, messages: list[str], temperature):
             """
             Make a request to the Azure OpenAI API to provide a translation
             """
@@ -83,28 +93,26 @@ try:
 
                 try:
                     result = self.client.chat.completions.create(
-                        model=self.deployment_name,
-                        messages=messages,
-                        temperature=temperature
+                        model=self.deployment_name, messages=messages, temperature=temperature
                     )
 
                     if self.aborted:
                         return None
 
-                    response['response_time'] = getattr(result, 'response_ms', 0)
+                    response["response_time"] = getattr(result, "response_ms", 0)
 
                     if result.usage:
-                        response['prompt_tokens'] = getattr(result.usage, 'prompt_tokens')
-                        response['completion_tokens'] = getattr(result.usage, 'completion_tokens')
-                        response['total_tokens'] = getattr(result.usage, 'total_tokens')
+                        response["prompt_tokens"] = result.usage.prompt_tokens
+                        response["completion_tokens"] = result.usage.completion_tokens
+                        response["total_tokens"] = result.usage.total_tokens
 
                     # We only expect one choice to be returned as we have 0 temperature
                     if result.choices:
                         choice = result.choices[0]
                         reply = result.choices[0].message
 
-                        response['finish_reason'] = getattr(choice, 'finish_reason', None)
-                        response['text'] = getattr(reply, 'content', None)
+                        response["finish_reason"] = getattr(choice, "finish_reason", None)
+                        response["text"] = getattr(reply, "content", None)
                     else:
                         raise TranslationResponseError("No choices returned in the response", response=result)
 
@@ -112,7 +120,7 @@ try:
                     return response
 
                 except openai.RateLimitError as e:
-                    retry_after = e.response.headers.get('x-ratelimit-reset-requests') or e.response.headers.get('Retry-After')
+                    retry_after = e.response.headers.get("x-ratelimit-reset-requests") or e.response.headers.get("Retry-After")
                     if retry_after:
                         retry_seconds = ParseDelayFromHeader(retry_after)
                         logging.warning(f"Rate limit hit, retrying in {retry_seconds} seconds...")
@@ -133,7 +141,7 @@ try:
                         raise TranslationImpossibleError(str(e), error=e)
 
                 except Exception as e:
-                    raise TranslationImpossibleError(f"Unexpected error communicating with OpenAI", error=e)
+                    raise TranslationImpossibleError("Unexpected error communicating with OpenAI", error=e)
 
             raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
 

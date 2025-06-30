@@ -1,13 +1,14 @@
-from json import JSONDecodeError
 import logging
 import time
+from json import JSONDecodeError
 
 from PySubtitle.Helpers.Parse import ParseDelayFromHeader
 from PySubtitle.SubtitleError import TranslationResponseError
 
+
 try:
-    import openai
     import httpx
+    import openai
 
     from PySubtitle.Helpers import FormatMessages
     from PySubtitle.SubtitleError import TranslationError, TranslationImpossibleError
@@ -19,7 +20,8 @@ try:
         """
         Handles communication with OpenAI to request translations
         """
-        def __init__(self, settings : dict):
+
+        def __init__(self, settings: dict):
             super().__init__(settings)
 
             if not hasattr(openai, "OpenAI"):
@@ -28,29 +30,31 @@ try:
             openai.api_key = self.api_key or openai.api_key
 
             if not openai.api_key:
-                raise TranslationImpossibleError('API key must be set in .env or provided as an argument')
+                raise TranslationImpossibleError("API key must be set in .env or provided as an argument")
 
-            logging.info(f"Translating with model {self.model or 'default'}, Using API Base: {self.api_base or openai.base_url}")
+            logging.info(
+                f"Translating with model {self.model or 'default'}, Using API Base: {self.api_base or openai.base_url}"
+            )
 
             self.client = None
 
         @property
         def api_key(self):
-            return self.settings.get('api_key')
+            return self.settings.get("api_key")
 
         @property
         def api_base(self):
-            return self.settings.get('api_base')
+            return self.settings.get("api_base")
 
         @property
         def model(self):
-            return self.settings.get('model')
-        
+            return self.settings.get("model")
+
         @property
         def reuse_client(self):
-            return self.settings.get('reuse_client', True)
+            return self.settings.get("reuse_client", True)
 
-        def _request_translation(self, prompt : TranslationPrompt, temperature : float = None) -> Translation:
+        def _request_translation(self, prompt: TranslationPrompt, temperature: float = None) -> Translation:
             """
             Request a translation based on the provided prompt
             """
@@ -68,11 +72,11 @@ try:
                     raise TranslationImpossibleError("Account quota reached, please upgrade your plan or wait until it renews")
 
                 if translation.reached_token_limit:
-                    raise TranslationError(f"Too many tokens in translation", translation=translation)
+                    raise TranslationError("Too many tokens in translation", translation=translation)
 
             return translation
 
-        def _send_messages(self, messages : list[str], temperature : float):
+        def _send_messages(self, messages: list[str], temperature: float):
             """
             Communicate with the API
             """
@@ -81,8 +85,8 @@ try:
         def _abort(self):
             self.client.close()
             return super()._abort()
-        
-        def _try_send_messages(self, prompt : TranslationPrompt, temperature: float):
+
+        def _try_send_messages(self, prompt: TranslationPrompt, temperature: float):
             for retry in range(self.max_retries + 1):
                 if self.aborted:
                     return None
@@ -96,7 +100,7 @@ try:
                     response = self._send_messages(prompt.content, temperature)
 
                     return response
-                
+
                 except TranslationResponseError as e:
                     if retry < self.max_retries and not self.aborted:
                         logging.warning(f"{str(e)}, retrying in {backoff_time} seconds...")
@@ -105,7 +109,9 @@ try:
 
                 except openai.RateLimitError as e:
                     if not self.aborted:
-                        retry_after = e.response.headers.get('x-ratelimit-reset-requests') or e.response.headers.get('Retry-After')
+                        retry_after = e.response.headers.get("x-ratelimit-reset-requests") or e.response.headers.get(
+                            "Retry-After"
+                        )
                         if retry_after:
                             backoff_time = ParseDelayFromHeader(retry_after)
                             logging.warning(f"Rate limit hit, retrying in {backoff_time} seconds...")
@@ -114,13 +120,13 @@ try:
                         else:
                             raise TranslationImpossibleError("Account quota reached, please upgrade your plan")
 
-                except openai.APITimeoutError as e:
+                except openai.APITimeoutError:
                     if retry < self.max_retries and not self.aborted:
                         logging.warning(f"API Timeout, retrying in {backoff_time} seconds...")
                         time.sleep(backoff_time)
                         continue
 
-                except JSONDecodeError as e:
+                except JSONDecodeError:
                     if retry < self.max_retries and not self.aborted:
                         logging.warning(f"Invalid response received, retrying in {backoff_time} seconds...")
                         time.sleep(backoff_time)
@@ -131,22 +137,19 @@ try:
                         raise TranslationError(str(e), error=e)
 
                 except Exception as e:
-                    raise TranslationImpossibleError(f"Unexpected error communicating with the provider", error=e)
+                    raise TranslationImpossibleError("Unexpected error communicating with the provider", error=e)
 
             if not self.aborted:
                 raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
 
         def _create_client(self):
             http_client = None
-            if self.settings.get('proxy'):
+            if self.settings.get("proxy"):
                 # Use httpx with SOCKS proxy support
-                proxies = {
-                    'http://': self.settings.get('proxy'),
-                    'https://': self.settings.get('proxy')
-                }
+                proxies = {"http://": self.settings.get("proxy"), "https://": self.settings.get("proxy")}
                 http_client = httpx.Client(proxies=proxies)
-            elif self.settings.get('use_httpx'):
-                 http_client = httpx.Client(base_url=self.api_base, follow_redirects=True)
+            elif self.settings.get("use_httpx"):
+                http_client = httpx.Client(base_url=self.api_base, follow_redirects=True)
 
             self.client = openai.OpenAI(api_key=openai.api_key, base_url=self.api_base or None, http_client=http_client)
 

@@ -1,20 +1,23 @@
-import os
 import datetime
 import logging
+import os
+
 import requests
 
-from PySubtitle.version import __version__
 from PySubtitle.Helpers.Resources import config_dir
+from PySubtitle.version import __version__
+
 
 repo_name = "gpt-subtrans"
 repo_owner = "machinewrapped"
 
-last_check_file = os.path.join(config_dir, 'last_check.txt')
+last_check_file = os.path.join(config_dir, "last_check.txt")
+
 
 def CheckIfUpdateAvailable():
     try:
         url = f"https://api.github.com/repos/{repo_owner}/{repo_name}/releases/latest"
-        response = requests.get(url)
+        response = requests.get(url, timeout=10)
 
         if response.status_code == 200:
             with open(last_check_file, "w") as f:
@@ -36,12 +39,13 @@ def CheckIfUpdateAvailable():
 
     return False
 
+
 def CheckIfUpdateCheckIsRequired():
     if not os.path.exists(last_check_file):
         return True
 
     try:
-        with open(last_check_file, "r") as f:
+        with open(last_check_file) as f:
             last_check = datetime.date.fromisoformat(f.read().strip())
 
         return datetime.date.today() > last_check

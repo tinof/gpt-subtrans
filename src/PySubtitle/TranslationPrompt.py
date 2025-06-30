@@ -1,18 +1,19 @@
-from typing import Optional, List
-
 from PySubtitle.SubtitleError import TranslationError
 from PySubtitle.SubtitleLine import SubtitleLine
+
 
 default_prompt_template = "<context>\n{context}\n</context>\n\n{prompt}\n\n<summary>Summary of the batch</summary>\n<scene>Summary of the scene</scene>\n"
 default_line_template = "#{number}\nOriginal>\n{text}\nTranslation>\n"
 default_tag_template = "<{tag}>{content}</{tag}>"
-default_context_tags = ['description', 'names', 'history', 'scene', 'summary', 'batch']
+default_context_tags = ["description", "names", "history", "scene", "summary", "batch"]
+
 
 class TranslationPrompt:
     """
     Class for formatting a prompt to request translation of a batch of subtitles
     """
-    def __init__(self, user_prompt : str, conversation : bool = True):
+
+    def __init__(self, user_prompt: str, conversation: bool = True):
         """
         Construct a translation prompt for a batch of subtitles
         """
@@ -42,7 +43,7 @@ class TranslationPrompt:
         self.content = None
         self.messages = []
 
-    def GenerateMessages(self, instructions : str, lines : list, context : dict):
+    def GenerateMessages(self, instructions: str, lines: list, context: dict):
         """
         Generate the messages to request translation of a batch of subtitles
 
@@ -58,20 +59,20 @@ class TranslationPrompt:
         self.batch_prompt = self.GenerateBatchPrompt(lines, context=context)
 
         if not instructions:
-            self.messages.append({'role': user_role, 'content': self.batch_prompt})
+            self.messages.append({"role": user_role, "content": self.batch_prompt})
         elif self.supports_system_prompt:
             self.system_prompt = instructions
-            self.messages.append({'role': user_role, 'content': self.batch_prompt})
+            self.messages.append({"role": user_role, "content": self.batch_prompt})
         elif self.supports_system_messages:
-            self.messages.append({'role': system_role, 'content': instructions})
-            self.messages.append({'role': user_role, 'content': self.batch_prompt})
+            self.messages.append({"role": system_role, "content": instructions})
+            self.messages.append({"role": user_role, "content": self.batch_prompt})
         else:
             user_instructions = self._wrap_system_message(instructions)
-            self.messages.append({'role': user_role, 'content': f"{user_instructions}\n{self.batch_prompt}"})
+            self.messages.append({"role": user_role, "content": f"{user_instructions}\n{self.batch_prompt}"})
 
         self._generate_content()
 
-    def GenerateBatchPrompt(self, lines : list, context : dict = None):
+    def GenerateBatchPrompt(self, lines: list, context: dict = None):
         """
         Create the user prompt for translating a set of lines
 
@@ -81,9 +82,9 @@ class TranslationPrompt:
         if not lines:
             raise ValueError("No source lines provided")
 
-        source_lines = [ _get_line_prompt(line, self.line_template) for line in lines ]
+        source_lines = [_get_line_prompt(line, self.line_template) for line in lines]
 
-        prompt = '\n\n'.join(source_lines).strip()
+        prompt = "\n\n".join(source_lines).strip()
 
         if self.user_prompt:
             prompt = f"{self.user_prompt}\n\n{prompt}\n"
@@ -95,7 +96,7 @@ class TranslationPrompt:
 
         return prompt
 
-    def GenerateRetryPrompt(self, reponse : str, retry_instructions : str, errors : list[TranslationError]):
+    def GenerateRetryPrompt(self, reponse: str, retry_instructions: str, errors: list[TranslationError]):
         """
         Request retranslation of lines that were not translated originally
         """
@@ -107,45 +108,46 @@ class TranslationPrompt:
 
         for message in self.messages:
             messages.append(message)
-            if message.get('role') == user_role:
+            if message.get("role") == user_role:
                 break
 
-        messages.append({ 'role': assistant_role, 'content': reponse })
+        messages.append({"role": assistant_role, "content": reponse})
 
         if errors:
-            unique_errors = set(( f"- {str(e).strip()}" for e in errors ))
+            unique_errors = set(f"- {str(e).strip()}" for e in errors)
             error_list = list(unique_errors)
-            error_message = '\n'.join(error_list)
+            error_message = "\n".join(error_list)
             retry_prompt = f"There were some problems with the translation:\n{error_message}\n\nPlease correct them."
         else:
             # Maybe less is more?
             retry_prompt = "There were some problems with the translation. Please try again."
 
         if self.supports_system_messages:
-            messages.append({ 'role': system_role, 'content': retry_instructions })
+            messages.append({"role": system_role, "content": retry_instructions})
         else:
             retry_prompt = f"{self._wrap_system_message(retry_instructions)}\n{retry_prompt}"
 
-        messages.append({ 'role': user_role, 'content': retry_prompt })
+        messages.append({"role": user_role, "content": retry_prompt})
 
         self.messages = messages
         self._generate_content()
 
-    def _wrap_system_message(self, message : str):
+    def _wrap_system_message(self, message: str):
         separator = "--------"
-        return '\n'.join( [ separator, "SYSTEM", separator, message.strip(), separator])
+        return "\n".join([separator, "SYSTEM", separator, message.strip(), separator])
 
     def _generate_content(self):
         self.content = self.messages if self.conversation else self._generate_completion()
 
     def _generate_completion(self):
-        """ Convert a series of messages to a script for the AI to complete """
+        """Convert a series of messages to a script for the AI to complete"""
         if self.supports_system_messages:
-            return "\n\n".join([ f"#{m.get('role')} ###\n{m.get('content')}" for m in self.messages ])
+            return "\n\n".join([f"#{m.get('role')} ###\n{m.get('content')}" for m in self.messages])
         else:
-            return "\n\n".join([ m.get('content') for m in self.messages ])
+            return "\n\n".join([m.get("content") for m in self.messages])
 
-def _get_line_prompt(line : SubtitleLine, line_template : str = None):
+
+def _get_line_prompt(line: SubtitleLine, line_template: str = None):
     """
     Generate a prompt for a single subtitle line
     """
@@ -154,16 +156,18 @@ def _get_line_prompt(line : SubtitleLine, line_template : str = None):
 
     return line_template.format(number=line.number, text=line.text_normalized)
 
-def _generate_tag(tag, content : str | List[str], tag_template : str) -> str:
+
+def _generate_tag(tag, content: str | list[str], tag_template: str) -> str:
     """
     Generate tag with content using the provided template
     """
     if isinstance(content, list):
-        content = ', '.join(content)
+        content = ", ".join(content)
 
     return tag_template.format(tag=tag, content=content).strip()
 
-def _generate_tag_lines(context : dict, tags : List[str], tag_template : str) -> Optional[str]:
+
+def _generate_tag_lines(context: dict, tags: list[str], tag_template: str) -> str | None:
     """
     Create a user message for specifying a set of tags
 
@@ -171,10 +175,9 @@ def _generate_tag_lines(context : dict, tags : List[str], tag_template : str) ->
     :param tags: list of tags to extract from the context.
     :param tag_template: template to use for each tag
     """
-    tag_lines = [ _generate_tag(tag, context[tag], tag_template) for tag in tags if context.get(tag) ]
+    tag_lines = [_generate_tag(tag, context[tag], tag_template) for tag in tags if context.get(tag)]
 
     if not tag_lines:
         return None
 
-    return '\n'.join([ tag for tag in tag_lines if tag ])
-
+    return "\n".join([tag for tag in tag_lines if tag])

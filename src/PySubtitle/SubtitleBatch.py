@@ -1,24 +1,25 @@
 from datetime import timedelta
 
-from PySubtitle.Substitutions import Substitutions
-from PySubtitle.TranslationPrompt import TranslationPrompt
-from PySubtitle.SubtitleError import SubtitleError
 from PySubtitle.Helpers.Subtitles import AddOrUpdateLine, MergeSubtitles
+from PySubtitle.Substitutions import Substitutions
+from PySubtitle.SubtitleError import SubtitleError
 from PySubtitle.SubtitleLine import SubtitleLine
 from PySubtitle.Translation import Translation
+from PySubtitle.TranslationPrompt import TranslationPrompt
+
 
 class SubtitleBatch:
-    def __init__(self, dct = None):
+    def __init__(self, dct=None):
         dct = dct or {}
-        self.scene = dct.get('scene', None)
-        self.number = dct.get('batch') or dct.get('number')
-        self.summary = dct.get('summary')
-        self.context = dct.get('context', {})
-        self.errors = dct.get('errors', [])
-        self._originals : list[SubtitleLine] = dct.get('originals', []) or dct.get('subtitles', [])
-        self._translated : list[SubtitleLine] = dct.get('translated', [])
-        self.translation : Translation = dct.get('translation')
-        self.prompt : TranslationPrompt = dct.get('prompt')
+        self.scene = dct.get("scene", None)
+        self.number = dct.get("batch") or dct.get("number")
+        self.summary = dct.get("summary")
+        self.context = dct.get("context", {})
+        self.errors = dct.get("errors", [])
+        self._originals: list[SubtitleLine] = dct.get("originals", []) or dct.get("subtitles", [])
+        self._translated: list[SubtitleLine] = dct.get("translated", [])
+        self.translation: Translation = dct.get("translation")
+        self.prompt: TranslationPrompt = dct.get("prompt")
 
     def __str__(self) -> str:
         return f"SubtitleBatch: {str(self.number)} in scene {str(self.scene)} with {self.size} lines"
@@ -88,11 +89,11 @@ class SubtitleBatch:
 
     @originals.setter
     def originals(self, value):
-        self._originals = [ SubtitleLine(line) for line in value if line.number ] if value else []
+        self._originals = [SubtitleLine(line) for line in value if line.number] if value else []
 
     @translated.setter
     def translated(self, value):
-        self._translated = [ SubtitleLine(line) for line in value if line.number ] if value else []
+        self._translated = [SubtitleLine(line) for line in value if line.number] if value else []
 
     def AddLine(self, line):
         """
@@ -101,10 +102,10 @@ class SubtitleBatch:
         AddOrUpdateLine(self._originals, SubtitleLine(line))
 
     def AddTranslatedLine(self, line):
-       """
-       Insert a translated line into the batch or replace an existing translation
-       """
-       AddOrUpdateLine(self._translated, SubtitleLine(line))
+        """
+        Insert a translated line into the batch or replace an existing translation
+        """
+        AddOrUpdateLine(self._translated, SubtitleLine(line))
 
     def HasTranslatedLine(self, line_number):
         if line_number < self.first_line_number or line_number > self.last_line_number:
@@ -133,7 +134,7 @@ class SubtitleBatch:
 
         updated = False
         for key in update.keys():
-            if key == 'summary':
+            if key == "summary":
                 if update[key] != self.summary:
                     self.summary = update[key]
                     updated = True
@@ -144,7 +145,7 @@ class SubtitleBatch:
 
         return updated
 
-    def PerformInputSubstitutions(self, substitutions : Substitutions):
+    def PerformInputSubstitutions(self, substitutions: Substitutions):
         """
         Perform any word/phrase substitutions on source text
         """
@@ -154,13 +155,13 @@ class SubtitleBatch:
             lines, replacements = substitutions.PerformSubstitutionsOnAll(lines)
 
             if replacements:
-                self.AddContext('input_replacements', replacements)
+                self.AddContext("input_replacements", replacements)
                 for item in self.originals:
                     item.text = replacements.get(item.text) or item.text
 
             return replacements
 
-    def PerformOutputSubstitutions(self, substitutions : Substitutions):
+    def PerformOutputSubstitutions(self, substitutions: Substitutions):
         """
         Perform any word/phrase substitutions on translated text
         """
@@ -170,13 +171,13 @@ class SubtitleBatch:
             _, replacements = substitutions.PerformSubstitutionsOnAll(lines)
 
             if replacements:
-                self.AddContext('output_replacements', replacements)
+                self.AddContext("output_replacements", replacements)
                 for item in self.translated:
                     item.text = replacements.get(item.text) or item.text
 
             return replacements
 
-    def MergeLines(self, line_numbers : list[int]):
+    def MergeLines(self, line_numbers: list[int]):
         """
         Merge multiple lines into a single line with the same start/end times
         """
@@ -189,7 +190,7 @@ class SubtitleBatch:
         last_index = self.originals.index(lines[-1])
 
         merged = MergeSubtitles(lines)
-        self.originals = self.originals[:first_index] + [ merged ] + self.originals[last_index + 1:]
+        self.originals = self.originals[:first_index] + [merged] + self.originals[last_index + 1 :]
 
         translated_lines = [line for line in self.translated if line.number in line_numbers]
 
@@ -197,13 +198,15 @@ class SubtitleBatch:
             first_translated_index = self.translated.index(translated_lines[0])
             last_translated_index = self.translated.index(translated_lines[-1])
             merged_translated = MergeSubtitles(translated_lines)
-            self.translated = self.translated[:first_translated_index] + [ merged_translated ] + self.translated[last_translated_index + 1:]
+            self.translated = (
+                self.translated[:first_translated_index] + [merged_translated] + self.translated[last_translated_index + 1 :]
+            )
 
             return merged, merged_translated
 
         return merged, None
 
-    def DeleteLines(self, line_numbers : list[int]) -> bool:
+    def DeleteLines(self, line_numbers: list[int]) -> bool:
         """
         Delete lines from the batch
         """
@@ -211,7 +214,7 @@ class SubtitleBatch:
         translated = [line for line in self.translated if line.number not in line_numbers]
 
         if len(originals) == len(self.originals) and len(translated) == len(self.translated):
-            return [],[]
+            return [], []
 
         deleted_originals = [line for line in self.originals if line.number in line_numbers]
         deleted_translated = [line for line in self.translated if line.number in line_numbers]
@@ -221,7 +224,7 @@ class SubtitleBatch:
 
         return deleted_originals, deleted_translated
 
-    def InsertOriginalLine(self, line : SubtitleLine):
+    def InsertOriginalLine(self, line: SubtitleLine):
         """
         Insert a line into the batch
         """
@@ -243,7 +246,7 @@ class SubtitleBatch:
                     self.originals.insert(index, line)
                     break
 
-    def InsertTranslatedLine(self, line : SubtitleLine):
+    def InsertTranslatedLine(self, line: SubtitleLine):
         """
         Insert a translated line into the batch
         """
