@@ -43,7 +43,7 @@ repos:
     hooks:
       - id: pipx-installation-test
         name: pipx installation test
-        entry: python -m pytest tests/test_pipx_installation.py::TestPackageStructure -v
+        entry: python3 -m pytest tests/test_pipx_installation.py::TestPackageStructure -v
         language: system
         pass_filenames: false
         stages: [pre-push]
