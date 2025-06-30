@@ -44,6 +44,7 @@ repos:
       - id: pipx-installation-test
         name: pipx installation test
         entry: python3 -m pytest tests/test_pipx_installation.py::TestPackageStructure -v
-        language: system
+        language: python
+        additional_dependencies: [pytest]
         pass_filenames: false
         stages: [pre-push]
