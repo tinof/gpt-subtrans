@@ -131,10 +131,7 @@ else:
                 """
                 If user has set a rate limit we can't make multiple requests at once
                 """
-                if self.settings.get("rate_limit", 0.0) != 0.0:
-                    return False
-
-                return True
+                return self.settings.get("rate_limit", 0.0) == 0.0
 
     except ImportError:
         logging.info("Mistral SDK not installed. Mistral provider will not be available")

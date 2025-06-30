@@ -125,25 +125,11 @@ select = [
 ignore = [
     "E501",    # Line too long (handled by formatter)
     "E203",    # Whitespace before ':' (not PEP 8 compliant)
-    "N806",    # Variable in function should be lowercase (too strict for our codebase)
-    "N803",    # Argument name should be lowercase (too strict for our codebase)
-    "N802",    # Function name should be lowercase (too strict for our codebase)
-    "N801",    # Class name should use CapWords convention (too strict for our codebase)
-    "N999",    # Invalid module name (our modules use PascalCase)
-    "W191",    # Indentation contains tabs (some files have mixed indentation)
-    "E741",    # Ambiguous variable name (common in loops)
-    "B904",    # Within except clause, raise exceptions with raise ... from err (too strict)
-    "C901",    # Function is too complex (existing complex functions)
-    "B007",    # Loop control variable not used within loop body (common pattern)
-    "SIM102",  # Use single if statement (sometimes nested is clearer)
-    "SIM103",  # Return condition directly (sometimes explicit is clearer)
-    "SIM118",  # Use key in dict instead of key in dict.keys() (sometimes .keys() is intentional)
-    "F541",    # f-string without placeholders (sometimes used for consistency)
-    "SIM210",  # Use bool(...) instead of True if ... else False (sometimes explicit is clearer)
-    "SIM117",  # Use single with statement (sometimes nested is clearer)
-    "B026",    # Star-arg unpacking after keyword argument (existing pattern)
-    "B006",    # Mutable default arguments (existing pattern)
-    "B023",    # Function definition does not bind loop variable (complex to fix)
+    "N802",    # Function name should be lowercase (PascalCase is used)
+    "N803",    # Argument name should be lowercase (PascalCase is used)
+    "N806",    # Variable in function should be lowercase
+    "N999",    # Invalid module name (PascalCase is used)
+    "B023",    # Function definition does not bind loop variable (can be complex to fix)
 ]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.

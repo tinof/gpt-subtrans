@@ -93,8 +93,8 @@ class SubtitleEncoder(json.JSONEncoder):
 
 # Reconstruct our custom types from JSON
 class SubtitleDecoder(json.JSONDecoder):
-    def __init__(self, *args, **kwargs):
-        super().__init__(object_hook=self.object_hook, *args, **kwargs)
+    def __init__(self, **kwargs):
+        super().__init__(object_hook=self.object_hook, **kwargs)
 
     def object_hook(self, dct):
         if "_class" in dct:

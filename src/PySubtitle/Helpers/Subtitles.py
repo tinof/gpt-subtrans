@@ -118,9 +118,8 @@ def FindSplitPoint(
         split_time = GetProportionalDuration(line, split_index, min_duration)
 
         # Skip if the split is too close to the start or end (exception for newlines)
-        if split_time < min_duration or (line.duration - split_time) < min_duration:
-            if priority > 0:
-                continue
+        if (split_time < min_duration or (line.duration - split_time) < min_duration) and priority > 0:
+            continue
 
         return split_index
 

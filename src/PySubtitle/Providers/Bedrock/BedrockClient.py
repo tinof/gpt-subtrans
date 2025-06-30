@@ -127,7 +127,7 @@ try:
                 return response
 
             except Exception as e:
-                raise TranslationImpossibleError(f"Error communicating with Bedrock: {str(e)}", error=e)
+                raise TranslationImpossibleError(f"Error communicating with Bedrock: {str(e)}", error=e) from e
 
 except ImportError:
     logging.debug("AWS Boto3 SDK not installed.")

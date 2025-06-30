@@ -1,3 +1,4 @@
+# ruff: noqa: C901
 import logging
 import time
 from json import JSONDecodeError
@@ -118,7 +119,7 @@ try:
                             time.sleep(backoff_time)
                             continue
                         else:
-                            raise TranslationImpossibleError("Account quota reached, please upgrade your plan")
+                            raise TranslationImpossibleError("Account quota reached, please upgrade your plan") from e
 
                 except openai.APITimeoutError:
                     if retry < self.max_retries and not self.aborted:
@@ -134,10 +135,10 @@ try:
 
                 except openai.APIConnectionError as e:
                     if not self.aborted:
-                        raise TranslationError(str(e), error=e)
+                        raise TranslationError(str(e), error=e) from e
 
                 except Exception as e:
-                    raise TranslationImpossibleError("Unexpected error communicating with the provider", error=e)
+                    raise TranslationImpossibleError("Unexpected error communicating with the provider", error=e) from e
 
             if not self.aborted:
                 raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")

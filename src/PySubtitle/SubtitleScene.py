@@ -99,7 +99,7 @@ class SubtitleScene:
             self.context = {}
 
         updated = False
-        for key in update.keys():
+        for key in update:
             if update[key] != self.context.get(key):
                 self.context[key] = update[key]
                 updated = True

@@ -108,7 +108,7 @@ class Instructions:
             raise ValueError(f"Instruction file not found: {filepath}")
 
         with open(filepath, encoding="utf-8") as f:
-            lines = [l.strip() for l in f.readlines()]
+            lines = [line.strip() for line in f.readlines()]
 
         if not lines:
             return

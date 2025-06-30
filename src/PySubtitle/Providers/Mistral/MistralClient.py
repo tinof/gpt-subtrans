@@ -70,7 +70,7 @@ try:
             """
             response = {}
 
-            for retry in range(self.max_retries + 1):
+            for _retry in range(self.max_retries + 1):
                 if self.aborted:
                     return None
 
@@ -112,7 +112,7 @@ try:
 
                 except Exception as e:
                     # TODO: find out what specific exceptions mistralai raises
-                    raise TranslationImpossibleError("Unexpected error communicating with the provider", error=e)
+                    raise TranslationImpossibleError("Unexpected error communicating with the provider", error=e) from e
 
             raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
 

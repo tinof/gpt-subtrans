@@ -127,7 +127,7 @@ try:
                         time.sleep(retry_seconds)
                         continue
                     else:
-                        raise TranslationImpossibleError("OpenAI account quota reached, please upgrade your plan")
+                        raise TranslationImpossibleError("OpenAI account quota reached, please upgrade your plan") from e
 
                 except openai.APITimeoutError as e:
                     if retry < self.max_retries and not self.aborted:
@@ -138,10 +138,10 @@ try:
 
                 except openai.APIConnectionError as e:
                     if not self.aborted:
-                        raise TranslationImpossibleError(str(e), error=e)
+                        raise TranslationImpossibleError(str(e), error=e) from e
 
                 except Exception as e:
-                    raise TranslationImpossibleError("Unexpected error communicating with OpenAI", error=e)
+                    raise TranslationImpossibleError("Unexpected error communicating with OpenAI", error=e) from e
 
             raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
 

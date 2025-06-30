@@ -99,7 +99,7 @@ class SubtitleProcessor:
                 line_number += len(split_lines)
 
                 if len(split_lines) > 1:
-                    new_line_text = "".join([str(l) for l in split_lines])
+                    new_line_text = "".join([str(sl) for sl in split_lines])
                     logging.debug(f"Split line {line.number} into {len(split_lines)} parts:\n{str(line)}-->\n{new_line_text}")
                 else:
                     logging.debug(f"Failed to split line {line.number}:\n{str(line)}")

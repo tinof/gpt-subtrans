@@ -98,7 +98,7 @@ def AddTranslations(subtitles: SubtitleFile, subtitle_data: dict, key: str = "tr
             batch.translated = batch_translated
 
             for line in batch.originals:
-                line.translated = next((l for l in batch_translated if l.number == line.number), None)
+                line.translated = next((sub for sub in batch_translated if sub.number == line.number), None)
                 line.translation = line.translated.text if line.translated else None
 
 

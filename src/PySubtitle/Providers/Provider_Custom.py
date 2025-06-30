@@ -9,7 +9,7 @@ from PySubtitle.TranslationPrompt import default_prompt_template
 from PySubtitle.TranslationProvider import TranslationProvider
 
 
-class Provider_CustomServer(TranslationProvider):
+class ProviderCustomServer(TranslationProvider):
     name = "Custom Server"
 
     information = """

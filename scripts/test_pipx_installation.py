@@ -202,7 +202,7 @@ This is a test subtitle.
         if all_passed:
             self.log_success("All tests passed! ✨")
         else:
-            self.log_error(f"Some tests failed. Errors:")
+            self.log_error("Some tests failed. Errors:")
             for error in self.errors:
                 self.log(f"  - {error}", Colors.RED)
 

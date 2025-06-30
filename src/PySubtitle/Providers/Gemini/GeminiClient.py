@@ -1,3 +1,4 @@
+# ruff: noqa: C901
 import logging
 import time
 
@@ -155,7 +156,9 @@ class GeminiClient(TranslationClient):
 
             except Exception as e:
                 if retry == self.max_retries:
-                    raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
+                    raise TranslationImpossibleError(
+                        f"Failed to communicate with provider after {self.max_retries} retries"
+                    ) from e
 
                 if not self.aborted:
                     sleep_time = self.backoff_time * 2.0**retry

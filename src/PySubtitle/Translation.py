@@ -40,7 +40,7 @@ class Translation:
 
     @property
     def has_translation(self):
-        return True if self.text else False
+        return bool(self.text)
 
     @property
     def summary(self):
@@ -102,7 +102,7 @@ class Translation:
         if not self.content:
             return "No translation"
 
-        content_keys = [k for k in self.content.keys() if k not in ["text", "summary", "scene", "names", "reasoning"]]
+        content_keys = [k for k in self.content if k not in ["text", "summary", "scene", "names", "reasoning"]]
         metadata = [f"{k}: {self.content[k]}" for k in content_keys if self.content.get(k)]
 
         if self.scene:

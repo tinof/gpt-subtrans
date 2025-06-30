@@ -45,7 +45,7 @@ class SubtitleBatch:
 
     @property
     def all_translated(self) -> bool:
-        return True if (self.translated and (len(self.translated) == len(self.originals))) else False
+        return bool(self.translated and (len(self.translated) == len(self.originals)))
 
     @property
     def any_translated(self) -> bool:
@@ -133,7 +133,7 @@ class SubtitleBatch:
             self.context = {}
 
         updated = False
-        for key in update.keys():
+        for key in update:
             if key == "summary":
                 if update[key] != self.summary:
                     self.summary = update[key]

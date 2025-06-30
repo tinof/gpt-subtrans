@@ -75,7 +75,7 @@ class SubtitleTranslator:
             self.client: TranslationClient = self.translation_provider.GetTranslationClient(self.settings)
 
         except Exception as e:
-            raise ProviderError(f"Unable to create provider client: {str(e)}")
+            raise ProviderError(f"Unable to create provider client: {str(e)}") from e
 
         if not self.client:
             raise ProviderError("Unable to create translation client")
@@ -342,7 +342,9 @@ class SubtitleTranslator:
         if translation.summary and translation.summary.strip():
             logging.info(f"Summary: {translation.summary}")
 
-    def RequestRetranslation(self, batch: SubtitleBatch, line_numbers: list[int] = None, context: dict = {}):
+    def RequestRetranslation(self, batch: SubtitleBatch, line_numbers: list[int] = None, context: dict = None):
+        if context is None:
+            context = {}
         """
         Ask the client to retranslate the input and correct errors
         """

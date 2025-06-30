@@ -209,10 +209,7 @@ else:
                 if self.settings.get("free_plan"):
                     return False
 
-                if self.settings.get("rate_limit", 0.0) != 0.0:
-                    return False
-
-                return True
+                return self.settings.get("rate_limit", 0.0) == 0.0
 
     except ImportError:
         logging.info("Failed to initialise OpenAI SDK. OpenAI provider will not be available")

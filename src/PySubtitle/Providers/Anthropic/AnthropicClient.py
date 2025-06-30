@@ -59,7 +59,7 @@ try:
                     self.client = self.client.with_options(http_client=http_client)
 
             except Exception as e:
-                raise TranslationImpossibleError("Failed to initialize Anthropic client", error=e)
+                raise TranslationImpossibleError("Failed to initialize Anthropic client", error=e) from e
 
             logging.debug(f"Messages:\n{FormatMessages(prompt.messages)}")
 
@@ -136,10 +136,10 @@ try:
                         continue
 
                 except anthropic.APIError as e:
-                    raise TranslationImpossibleError(self._get_error_message(e), error=e)
+                    raise TranslationImpossibleError(self._get_error_message(e), error=e) from e
 
                 except Exception as e:
-                    raise TranslationError("Error communicating with provider", error=e)
+                    raise TranslationError("Error communicating with provider", error=e) from e
 
             raise TranslationImpossibleError(f"Failed to communicate with provider after {self.max_retries} retries")
 

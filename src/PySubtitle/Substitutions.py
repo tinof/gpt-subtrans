@@ -102,8 +102,8 @@ class Substitutions:
         if isinstance(mode, int):
             try:
                 return self.Mode(mode)
-            except ValueError:
-                raise ValueError(f"No enum member for value: {mode}")
+            except ValueError as e:
+                raise ValueError(f"No enum member for value: {mode}") from e
 
         return GetValueFromName(mode, self.Mode)
 

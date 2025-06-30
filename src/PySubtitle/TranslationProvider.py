@@ -143,7 +143,7 @@ class TranslationProvider:
         Dynamically import all modules in the providers package.
         """
         package = importlib.import_module(package_name)
-        for loader, module_name, is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
+        for _loader, module_name, _is_pkg in pkgutil.iter_modules(package.__path__, package.__name__ + "."):
             logging.debug(f"Importing provider: {module_name}")
             importlib.import_module(module_name)
 

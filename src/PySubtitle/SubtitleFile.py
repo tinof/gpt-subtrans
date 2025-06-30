@@ -282,10 +282,9 @@ class SubtitleFile:
         projectfile = os.path.normpath(projectfile)
         logging.info(f"Writing project data to {str(projectfile)}")
 
-        with self.lock:
-            with open(projectfile, "w", encoding=default_encoding) as f:
-                project_json = json.dumps(self, cls=encoder_class, ensure_ascii=False, indent=4)
-                f.write(project_json)
+        with self.lock, open(projectfile, "w", encoding=default_encoding) as f:
+            project_json = json.dumps(self, cls=encoder_class, ensure_ascii=False, indent=4)
+            f.write(project_json)
 
     def SaveOriginal(self, path: str = None):
         """

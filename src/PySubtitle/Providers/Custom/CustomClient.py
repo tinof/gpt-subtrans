@@ -1,3 +1,4 @@
+# ruff: noqa: C901
 import logging
 import time
 
@@ -145,7 +146,7 @@ class CustomClient(TranslationClient):
                     logging.error(f"Request to server timed out: {str(e)}")
 
             except Exception as e:
-                raise TranslationImpossibleError("Unexpected error communicating with server", error=e)
+                raise TranslationImpossibleError("Unexpected error communicating with server", error=e) from e
 
             if self.aborted:
                 return None
