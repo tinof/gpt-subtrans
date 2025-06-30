@@ -30,6 +30,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "ruff",
+    "bandit",
+    "pre-commit",
+]
 openai = ["openai"]
 gemini = ["google-genai", "google-api-core"]
 claude = ["anthropic"]
