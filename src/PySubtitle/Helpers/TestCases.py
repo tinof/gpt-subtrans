@@ -3,7 +3,6 @@ import unittest
 
 import regex
 
-from GUI.ProjectDataModel import ProjectDataModel
 from PySubtitle.Options import Options
 from PySubtitle.SubtitleBatch import SubtitleBatch
 from PySubtitle.SubtitleBatcher import SubtitleBatcher
@@ -102,29 +101,7 @@ def AddTranslations(subtitles : SubtitleFile, subtitle_data : dict, key : str = 
                 line.translated = next((l for l in batch_translated if l.number == line.number), None)
                 line.translation = line.translated.text if line.translated else None
 
-def CreateTestDataModel(test_data : dict, options : Options = None) -> ProjectDataModel:
-    """
-    Creates a ProjectDataModel from test data.
-    """
-    file : SubtitleFile = PrepareSubtitles(test_data, 'original')
-    datamodel = ProjectDataModel(options = options)
-    datamodel.project = SubtitleProject(options, file)
-    datamodel.UpdateProviderSettings({"data" : test_data})
-    return datamodel
-
-def CreateTestDataModelBatched(test_data : dict, options : Options = None, translated : bool = True) -> ProjectDataModel:
-    """
-    Creates a SubtitleBatcher from test data.
-    """
-    datamodel : ProjectDataModel = CreateTestDataModel(test_data, options)
-    subtitles : SubtitleFile = datamodel.project.subtitles
-    batcher = SubtitleBatcher(options.GetSettings())
-    subtitles.AutoBatch(batcher)
-
-    if translated and 'translated' in test_data:
-        AddTranslations(subtitles, test_data, 'translated')
-
-    return datamodel
+# GUI-related functions removed - they were only used by deleted GUI test files
 
 def AddResponsesFromMap(subtitles : SubtitleFile, test_data : dict):
     """

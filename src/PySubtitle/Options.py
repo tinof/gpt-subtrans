@@ -67,7 +67,6 @@ default_options = {
     'last_used_path': None,
     'stop_on_error' : env_bool('STOP_ON_ERROR'),
     'write_backup' : env_bool('WRITE_BACKUP_FILE', True),
-    'theme' : os.getenv('THEME', None),
     'firstrun' : False
 }
 
@@ -102,10 +101,6 @@ class Options:
 
         options = {k: v for k, v in options.items() if v is not None}
         self.options.update(options)
-
-    @property
-    def theme(self) -> str:
-        return self.get('theme')
 
     @property
     def version(self) -> str:

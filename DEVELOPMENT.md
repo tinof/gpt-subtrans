@@ -1,10 +1,11 @@
 # GPT-SubTrans Development Guide
 
 ## Commands
-- Run all tests: `python scripts/run_tests.py`
-- Run single test: `python -m unittest PySubtitle.UnitTests.test_MODULE`
-- Build distribution: `./scripts/makedistro.sh` (Linux/Mac) or `scripts\makedistro.bat` (Windows)
-- Install dependencies: `./install.sh` (Linux/Mac) or `install.bat` (Windows)
+- Run all tests: `python -m unittest discover tests`
+- Run single test: `python -m unittest tests.test_MODULE`
+- Build distribution: `python -m build`
+- Install for development: `pip install -e .`
+- Install with all providers: `pip install -e .[all]`
 
 ## Code Style
 - **Naming**: PascalCase for classes and methods, snake_case for variables

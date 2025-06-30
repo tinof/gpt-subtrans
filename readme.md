@@ -4,9 +4,40 @@ GPT-Subtrans is an open source subtitle translator that uses LLMs as a translati
 Note: GPT-Subtrans requires an active internet connection. Subtitles are sent to the provider's servers for translation, so their privacy policy applies.
 
 ## Installation
-For most users the packaged release is the easiest way to use the program. Download a package from [the releases page](https://github.com/machinewrapped/gpt-subtrans/releases), unzip to a folder and run `gui-subtrans.exe`. You will be prompted for some basic settings on first run.
 
-Every release is packaged for Windows (**gui-subtrans-x.x.x.zip**). MacOS packages are provided when possible (**gui-subtrans-x.x.x.macos-arm64.zip**), but are sometimes blocked by PyInstaller issues. If the latest release does not have a macos-arm64 package you can download an earlier release or [install from source](##Installing-from-source).
+This project is designed to be installed using `pipx`, which installs Python command-line tools in isolated environments.
+
+1. First, install `pipx`:
+   ```sh
+   python3 -m pip install --user pipx
+   python3 -m pipx ensurepath
+   ```
+
+2. Install `gpt-subtrans` from this repository:
+   ```sh
+   pipx install git+https://github.com/tinof/gpt-subtrans.git
+   ```
+
+### Installing Provider Dependencies
+
+By default, only the core dependencies are installed. You need to install the specific SDK for the AI provider you want to use. You can do this by injecting the dependency into the `gpt-subtrans` environment.
+
+For example, to use **OpenAI**:
+```sh
+pipx inject gpt-subtrans openai
+```
+
+To use **Google Gemini**:
+```sh
+pipx inject gpt-subtrans google-genai google-api-core
+```
+
+You can find the required package for each provider in the `pyproject.toml` file under `[project.optional-dependencies]`.
+
+To install all provider SDKs at once:
+```sh
+pipx install 'git+https://github.com/tinof/gpt-subtrans.git[all]'
+```
 
 ### OpenAI
 https://openai.com/policies/privacy-policy
@@ -62,7 +93,7 @@ GPT-Subtrans can interface directly with any server that supports an OpenAI comp
 
 This is mainly for research and you should not expect particularly good results. LLMs derive much of their power from their size, so the small, quantized models you can run on a GPU are likely to produce poor translations, fail to generate valid responses or get stuck in endless loops. If you find a model that reliably producess good results, please post about it in the Discussions area!
 
-Chat and completion endpoints are supported, you should configure the settings and endpoint based on the model the server is running (e.g. instruction tuned models will probably produce better results using the completions endpoint rather than chat/conversation). The prompt template can be edited in the GUI if you are using a model that requires a particular format - make sure to include at least the {prompt} tag in the template, as this is where the subtitles that need translating in each batch will be provided.
+Chat and completion endpoints are supported, you should configure the settings and endpoint based on the model the server is running (e.g. instruction tuned models will probably produce better results using the completions endpoint rather than chat/conversation).
 
 ### Amazon Bedrock
 https://aws.amazon.com/service-terms/
@@ -79,91 +110,53 @@ Building MacOS universal binaries with PyInstaller has not worked for some time 
 ### Linux
 Prebuilt Linux packages are not provided so you will need to install from source.
 
-## Installing from source
-For other platforms, or if you want to modify the program, you will need to have Python 3.10+ and pip installed on your system, then follow these steps.
+## Development Installation
 
-#### step1
+If you want to modify the program or contribute to development, you can install it in development mode:
 
-1. Clone the GPT-Subtrans repository onto your local machine using the following command:
+1. Clone the repository:
+   ```sh
+   git clone https://github.com/machinewrapped/gpt-subtrans.git
+   cd gpt-subtrans
+   ```
 
-    ```sh
-    git clone https://github.com/machinewrapped/gpt-subtrans.git
-    ```
+2. Install in development mode:
+   ```sh
+   pip install -e .
+   ```
 
-The easiest setup method is to run an installation script, e.g. `install-openai.bat` or `install-gemini.bat`. This will create a virtual environment and install all the required packages for the provider, and generate command scripts to launch the specified provider. MacOS and Linux users should run `install.sh` instead (this should work on any unix-like system).
+3. Install provider dependencies as needed:
+   ```sh
+   pip install -e .[all]  # Install all providers
+   # OR install specific providers:
+   pip install openai google-genai anthropic mistralai boto3
+   ```
 
-During the installing process, input the apikey for the selected provider if requested. It will be saved in a .env file so that you don't need to provide it every time you run the program.
+### Configuration
 
-**If you ran an install script you can skip the remaining steps. Continue reading if you want to configure the environment manually instead.**
+Create a `.env` file in your working directory with your API keys:
 
-#### step2
+```sh
+OPENAI_API_KEY=<your_openai_api_key>
+GEMINI_API_KEY=<your_gemini_api_key>
+AZURE_API_KEY=<your_azure_api_key>
+CLAUDE_API_KEY=<your_claude_api_key>
+DEEPSEEK_API_KEY=<your_deepseek_api_key>
+MISTRAL_API_KEY=<your_mistral_api_key>
+```
 
-2. Create a new file named .env in the root directory of the project. Add any required settings for your chosen provider to the .env file like this:
-    ```sh
-    OPENAI_API_KEY=<your_openai_api_key>
-    GEMINI_API_KEY=<your_gemini_api_key>
-    AZURE_API_KEY=<your_azure_api_key>
-    CLAUDE_API_KEY=<your_claude_api_key>
-    ```
+For Azure:
+```sh
+AZURE_API_BASE=<your api_base, such as https://something.openai.azure.com>
+AZURE_DEPLOYMENT_NAME=<deployment_name>
+```
 
-    If you are using Azure:
-
-    ```sh
-    AZURE_API_BASE=<your api_base, such as https://something.openai.azure.com>
-    AZURE_DEPLOYMENT_NAME=<deployment_name>
-    ```
-
-    If you are using Bedrock:
-    ```sh
-    AWS_ACCESS_KEY_ID=your-access-key-id
-    AWS_SECRET_ACCESS_KEY=your-secret-access-key
-    AWS_REGION=your-region
-    ```
-
-    For OpenAI reasoning models you can set the reasoning effort (default is low):
-    ```sh
-    OPENAI_REASONING_EFFORT=low/medium/high
-    ```
-
-#### step3
-
-3. Create a virtual environment for the project by running the following command in the root folder to create a local environment for the Python interpreter.:
-
-    ```sh
-    python -m venv envsubtrans
-    ```
-
-notice： For linux user, the environment has already prepared during the installing process.
-
-#### step4
-
-4. Activate the virtual environment by running the appropriate command for your operating system:
-
-    ```sh
-    .\envsubtrans\Scripts\activate
-    .\envsubtrans\bin\activate
-    source path/to/gpt-subtrans/envsubtrans/bin/activate    # for linux user
-    ```
-
-#### step5
-
-5. Install the required libraries using pip by running the following command in your terminal to install the project dependencies (listed in the requirements.txt file):
-
-    ```sh
-    pip install -r requirements.txt
-    ```
-
-#### step6
-
-6. Install the SDKs for the provider(s) you intend to use
-
-    ```sh
-    pip install openai
-    pip install google-genai
-    pip install anthropic
-    ```
-
-Note that steps 3 and 4 are optional, but they can help prevent conflicts with other Python applications.
+For Bedrock:
+```sh
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+AWS_REGION=your-region
+```
 
 ## Usage
 The program works by dividing the subtitles up into small batches and sending each one to the translation service in turn. It is likely to take time to complete, and can potentially make many API calls for each subtitle file.
@@ -172,22 +165,20 @@ By default The translated subtitles will be written to a new SRT file in the sam
 
 Subtitle Edit's (https://www.nikse.dk/subtitleedit) "Fix Common Errors" can help to clean up the translated subtitles, though some of its functionality is now covered by the post-process option (`--postprocess`) in GPT-Subtrans.
 
-### GUI
-The [Subtrans GUI](https://github.com/machinewrapped/gpt-subtrans/wiki/GUI#gui-subtrans) is the best and easiest way to use the program. After installation, launch the GUI with the `gui-subtrans` command or shell script, and hopefully the rest should be self-explanatory.
+### Command Line Usage
 
-See the project wiki for further details on how to use the program.
-
-### Command Line
-
-GPT-Subtrans can be used as a console command or shell script. The install scripts create a cmd or sh file in the project root for each provider, which will take care of activating the virtual environment and calling the corresponding translation script.
+GPT-Subtrans is a command-line tool with multiple entry points for different AI providers.
 
 The most basic usage is:
 ```sh
 gpt-subtrans <path_to_srt_file> --target_language <target_language>
 gemini-subtrans <path_to_srt_file> --target_language <target_language>
 claude-subtrans <path_to_srt_file> --target_language <target_language>
+deepseek-subtrans <path_to_srt_file> --target_language <target_language>
+mistral-subtrans <path_to_srt_file> --target_language <target_language>
+azure-subtrans <path_to_srt_file> --target_language <target_language>
+bedrock-subtrans <path_to_srt_file> --target_language <target_language>
 llm-subtrans -s <server_address> -e <endpoint> -l <language> <path_to_srt_file>
-python3 batch_process.py  # process files in different folders
 ```
 If the target language is not specified the default is English. Other options that can be specified on the command line are detailed below.
 
@@ -390,7 +381,7 @@ Note: Remember to activate the virtual environment every time you work on the pr
 
 ## Project File
 
-**Note** If you are using the GUI a project file is created automatically when you open a subtitle file for the first time, and updated automatically.
+**Note** A project file can be created automatically by using the `--project` argument.
 
 The `--project` argument or `PROJECT` .env setting can take a number of values, which control whether and when an intermediate file will be written to disc.
 
@@ -413,9 +404,9 @@ Settings are compartmentalised for each provider. For the intial release the onl
 
 Version 0.5 adds support for gpt-instruct models and a refactored code base to support different translation engines. For most users, the recommendation is still to use the **gpt-3.5-turbo-16k** model with batch sizes of between (10,100) lines, for the best combination of performance/cost and translation quality.
 
-Version 0.4 features significant optimisations to the GUI making it more responsive and usable, along with numerous bug fixes.
+Version 0.4 features significant optimisations and numerous bug fixes.
 
-Version 0.3 featured a major effort to bring the GUI up to full functionality and usability, including adding options dialogs and more, plus many bug fixes.
+Version 0.3 featured many bug fixes and improvements.
 
 Version 0.2 employs a new prompting approach that greatly reduces desyncs caused by GPT merging together source lines in the translation. This can reduce the naturalness of the translation when the source and target languages have very different grammar, but it provides a better base for a human to polish the output.
 
@@ -459,15 +450,8 @@ Translation providers:
 - mistralai (https://github.com/mistralai/client-python)
 - boto3 (Amazon Bedrock) (https://github.com/boto/boto3)
 
-For the GUI:
-- pyside6 (https://wiki.qt.io/Qt_for_Python)
-- events (https://pypi.org/project/Events/)
-- darkdetect (https://github.com/albertosottile/darkdetect)
+For configuration:
 - appdirs (https://github.com/ActiveState/appdirs)
-
-For bundled versions:
-- python (https://www.python.org/)
-- pyinstaller (https://pyinstaller.org/)
 
 ## License
 GPT-Subtrans is licensed under the MIT License. See LICENSE for the 3rd party library licenses.
