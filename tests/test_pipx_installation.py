@@ -203,7 +203,7 @@ class TestPackageStructure(unittest.TestCase):
         self.assertTrue(instructions_path.exists(), "instructions/instructions.txt should exist in package")
 
         # Verify it's not empty
-        with open(instructions_path) as f:
+        with open(instructions_path, encoding="utf-8") as f:
             content = f.read().strip()
 
         self.assertTrue(content, "instructions.txt should not be empty")
