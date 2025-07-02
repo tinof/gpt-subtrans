@@ -77,7 +77,7 @@ class GeminiClient(TranslationClient):
 
         for retry in range(1 + self.max_retries):
             try:
-                gemini_client = genai.Client(api_key=self.api_key, http_options={"api_version": "v1alpha"})
+                gemini_client = genai.Client(api_key=self.api_key, http_options={"api_version": "v1"})
                 config = GenerateContentConfig(
                     candidate_count=1,
                     temperature=temperature,
