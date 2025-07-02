@@ -3,6 +3,42 @@ GPT-Subtrans is an open source subtitle translator that uses LLMs as a translati
 
 Note: GPT-Subtrans requires an active internet connection. Subtitles are sent to the provider's servers for translation, so their privacy policy applies.
 
+## About This Fork
+
+This is a **command-line focused fork** of the original [gpt-subtrans project](https://github.com/machinewrapped/gpt-subtrans), specifically designed for server environments, automation workflows, and users who prefer lightweight, CLI-only tools.
+
+### Key Changes Made
+
+- **🏗️ Modern Python Packaging**: Completely refactored from script-based architecture to a standard Python package using `pyproject.toml` and `src/` layout
+- **🖥️ GUI Removal**: Removed all GUI components and dependencies (PySide6, events, darkdetect) for a lean, headless-friendly package
+- **🚀 Multiple CLI Entry Points**: Created dedicated command-line tools for each AI provider:
+  - `gpt-subtrans` (OpenAI GPT)
+  - `claude-subtrans` (Anthropic Claude)
+  - `gemini-subtrans` (Google Gemini)
+  - `deepseek-subtrans` (DeepSeek)
+  - `mistral-subtrans` (Mistral AI)
+  - `azure-subtrans` (Azure OpenAI)
+  - `bedrock-subtrans` (Amazon Bedrock)
+  - `llm-subtrans` (Custom LLM servers)
+- **📦 pipx Optimization**: Designed specifically for `pipx` installation with minimal dependencies and isolated environments
+- **🔧 Better Maintainability**: Follows standard Python packaging practices for easier development and distribution
+
+### Goals
+
+- **Lean & Fast**: Provide a lightweight subtitle translation tool without GUI bloat
+- **Server-Friendly**: Perfect for headless servers, Docker containers, and automation scripts
+- **Easy Installation**: Simple `pipx` installation with optional provider dependencies
+- **Developer-Focused**: Standard packaging practices make it easier to contribute and maintain
+
+### Differences from Original
+
+- **No GUI**: This fork is command-line only - no graphical interface
+- **Package-Based**: Installable as a proper Python package rather than standalone scripts
+- **Provider-Specific Commands**: Each AI provider has its own dedicated CLI command
+- **Minimal Dependencies**: Significantly reduced dependency footprint
+
+This fork maintains full compatibility with the original project's core translation functionality while providing a more streamlined experience for command-line users and automated workflows.
+
 ## Installation
 
 This project is designed to be installed using `pipx`, which installs Python command-line tools in isolated environments.
