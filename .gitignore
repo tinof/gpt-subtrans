@@ -35,3 +35,6 @@ bedrock-subtrans.sh
 mistral-subtrans.sh
 *.zip
 exsubs
+
+# Python package metadata (auto-generated)
+*.egg-info/

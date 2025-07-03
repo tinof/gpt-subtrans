@@ -1,9 +1,0 @@
-[console_scripts]
-azure-subtrans = PySubtitle.cli:azure_main
-bedrock-subtrans = PySubtitle.cli:bedrock_main
-claude-subtrans = PySubtitle.cli:claude_main
-deepseek-subtrans = PySubtitle.cli:deepseek_main
-gemini-subtrans = PySubtitle.cli:gemini_main
-gpt-subtrans = PySubtitle.cli:gpt_main
-llm-subtrans = PySubtitle.cli:llm_main
-mistral-subtrans = PySubtitle.cli:mistral_main

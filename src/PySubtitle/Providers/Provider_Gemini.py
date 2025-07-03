@@ -126,7 +126,7 @@ else:
                     return []
 
                 try:
-                    gemini_client = genai.Client(api_key=self.api_key, http_options={"api_version": "v1alpha"})
+                    gemini_client = genai.Client(api_key=self.api_key, http_options={"api_version": "v1beta"})
                     config = ListModelsConfig(query_base=True)
                     all_models = gemini_client.models.list(config=config)
 
