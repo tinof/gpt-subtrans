@@ -41,7 +41,7 @@ class TranslationParser:
         self.translations = {}
         self.translated = []
         self.errors = []
-        self.metatags = ["<summary>", "scene"]
+        self.metatags = ["summary", "scene"]
         self.task_type = task_type
         self.regex_patterns = self.GetRegularExpressionPatterns(task_type)
 
