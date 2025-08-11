@@ -29,6 +29,9 @@ class TranslationPrompt:
         # Flag controlling whether to include messages in the "system" role
         self.supports_system_messages = False
 
+        # Name of the privileged role to use when supports_system_messages is True
+        self.system_role = "system"
+
         # Flag controlling whether to use the "system" role for retry instructions
         self.supports_system_messages_for_retry = False
 
@@ -54,7 +57,7 @@ class TranslationPrompt:
         self.messages.clear()
 
         user_role = "user"
-        system_role = "system" if self.supports_system_messages else user_role
+        system_role = self.system_role if self.supports_system_messages else user_role
 
         self.batch_prompt = self.GenerateBatchPrompt(lines, context=context)
 
@@ -104,7 +107,7 @@ class TranslationPrompt:
 
         user_role = "user"
         assistant_role = "assistant"
-        system_role = "system" if self.supports_system_messages_for_retry else user_role
+        system_role = self.system_role if self.supports_system_messages_for_retry else user_role
 
         for message in self.messages:
             messages.append(message)
