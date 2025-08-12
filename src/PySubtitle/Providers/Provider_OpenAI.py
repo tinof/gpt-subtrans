@@ -130,7 +130,7 @@ else:
 
                         if self.is_reasoning_model:
                             options["reasoning_effort"] = (
-                                ["low", "medium", "high"],
+                                ["minimal", "low", "medium", "high"],
                                 "The level of reasoning effort to use for the model",
                             )
                         else:
