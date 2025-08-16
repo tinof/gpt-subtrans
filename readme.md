@@ -196,7 +196,7 @@ If you ran an install script you can skip the remaining steps. Continue reading 
 
 Create a new file named `.env` in the root directory of the project. Add any required settings for your chosen provider to the `.env` file like this:
 
-For OpenAI reasoning models you can set the reasoning effort (default is `low`):
+For OpenAI reasoning models you can set the reasoning effort (default is `medium`):
 
 ```
 OPENAI_REASONING_EFFORT=low/medium/high
