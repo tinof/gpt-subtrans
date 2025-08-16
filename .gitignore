@@ -38,3 +38,6 @@ exsubs
 
 # Python package metadata (auto-generated)
 *.egg-info/
+/.clinerules
+/.claude
+CLAUDE.md
