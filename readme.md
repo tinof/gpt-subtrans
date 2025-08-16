@@ -30,6 +30,15 @@ This is a **command-line focused fork** of the original [gpt-subtrans project](h
 - **Easy Installation**: Simple `pipx` installation with optional provider dependencies
 - **Developer-Focused**: Standard packaging practices make it easier to contribute and maintain
 
+### Fork differences at a glance
+
+- CLI-only: all GUI code and dependencies removed
+- pipx-first: designed and tested for pipx installation and isolated environments
+- Modern packaging: pyproject + src/ layout, provider CLIs as entry points
+- Minimal deps: provider SDKs are optional extras; inject only what you need
+- Docs and tests: CI validates pipx install across OSes and Python versions
+
+
 ### Differences from Original
 
 - **No GUI**: This fork is command-line only - no graphical interface
@@ -180,6 +189,21 @@ Create a `.env` file in your working directory with your API keys:
 
 ```sh
 OPENAI_API_KEY=<your_openai_api_key>
+
+#### Manual configuration (reasoning effort)
+
+If you ran an install script you can skip the remaining steps. Continue reading only if you want to configure the environment manually instead.
+
+Create a new file named `.env` in the root directory of the project. Add any required settings for your chosen provider to the `.env` file like this:
+
+For OpenAI reasoning models you can set the reasoning effort (default is `low`):
+
+```
+OPENAI_REASONING_EFFORT=low/medium/high
+```
+
+Note (this pipx CLI fork): reasoning effort is configured via environment variables or project settings; there is no dedicated CLI flag for it. If you choose a non‑reasoning model, the normal `temperature` setting applies instead.
+
 GEMINI_API_KEY=<your_gemini_api_key>
 AZURE_API_KEY=<your_azure_api_key>
 CLAUDE_API_KEY=<your_claude_api_key>
