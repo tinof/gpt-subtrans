@@ -85,8 +85,10 @@ class CustomClient(TranslationClient):
                 request_body = self._generate_request_body(prompt, temperature)
                 logging.debug(f"Request Body:\n{request_body}")
 
+                # Allow configurable timeout (seconds) via settings; default to 300s
+                timeout = self.settings.get("timeout", 300.0)
                 self.client = httpx.Client(
-                    base_url=self.server_address, follow_redirects=True, timeout=300.0, headers=self.headers
+                    base_url=self.server_address, follow_redirects=True, timeout=timeout, headers=self.headers
                 )
 
                 result: httpx.Response = self.client.post(self.endpoint, json=request_body)

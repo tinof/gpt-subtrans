@@ -39,6 +39,12 @@ This is a **command-line focused fork** of the original [gpt-subtrans project](h
 
 This fork maintains full compatibility with the original project's core translation functionality while providing a more streamlined experience for command-line users and automated workflows.
 
+### Recent updates in this fork
+
+- Fix: more robust handling of unclosed <summary> tags in translation output parsing
+- Custom Server: configurable request timeout via `--timeout` flag (or `CUSTOM_TIMEOUT` env var)
+
+
 ## Installation
 
 This project is designed to be installed using `pipx`, which installs Python command-line tools in isolated environments.
@@ -214,7 +220,7 @@ deepseek-subtrans <path_to_srt_file> --target_language <target_language>
 mistral-subtrans <path_to_srt_file> --target_language <target_language>
 azure-subtrans <path_to_srt_file> --target_language <target_language>
 bedrock-subtrans <path_to_srt_file> --target_language <target_language>
-llm-subtrans -s <server_address> -e <endpoint> -l <language> <path_to_srt_file>
+llm-subtrans -s <server_address> -e <endpoint> -l <language> [--timeout 300] <path_to_srt_file>
 ```
 If the target language is not specified the default is English. Other options that can be specified on the command line are detailed below.
 
@@ -375,6 +381,10 @@ Some additional arguments are available for specific providers.
 
 - `--systemmessages`:
   If using a conversation endpoint, translation instructions will be sent as the "system" user if this flag is specified.
+
+
+- `--timeout`:
+  Request timeout in seconds for custom server calls. Default is 300s. Can also be set with `CUSTOM_TIMEOUT` in environment.
 
 - `-k`, `--apikey`:
   Local servers shouldn't need an api key, but the option is provided in case it is needed for your setup.

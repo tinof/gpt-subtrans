@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "github.com/github/github-mcp-server": {
+      "command": "/Users/tfotiou/.cline/mcp-servers/github-mcp-server/github-mcp-server",
+      "args": ["stdio"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PAT}"
+      },
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

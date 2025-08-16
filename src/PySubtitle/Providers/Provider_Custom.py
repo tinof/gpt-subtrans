@@ -46,6 +46,7 @@ class ProviderCustomServer(TranslationProvider):
                 "max_completion_tokens": settings.get(
                     "max_completion_tokens", GetEnvInteger("CUSTOM_MAX_COMPLETION_TOKENS", 0)
                 ),
+                "timeout": settings.get("timeout", GetEnvFloat("CUSTOM_TIMEOUT", 300.0)),
                 "api_key": settings.get("api_key", os.getenv("CUSTOM_API_KEY")),
                 "model": settings.get("model", os.getenv("CUSTOM_MODEL")),
                 "supports_parallel_threads": settings.get(
@@ -129,6 +130,10 @@ class ProviderCustomServer(TranslationProvider):
                     "supports_parallel_threads": (
                         bool,
                         "Use parallel threads for translation requests (may be faster but may not work with the server)",
+                    ),
+                    "timeout": (
+                        float,
+                        "Request timeout in seconds for server calls (default 300s)",
                     ),
                 }
             )

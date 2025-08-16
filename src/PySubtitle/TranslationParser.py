@@ -195,7 +195,8 @@ class TranslationParser:
 
         for match in re_opening.finditer(last_line.text):
             tag = match.group(1)
-            if not regex.search(rf"</{tag}>", last_line.text):
+            # Ensure closing tag search is case-insensitive as models may vary tag case
+            if not regex.search(rf"</{tag}>", last_line.text, flags=regex.IGNORECASE):
                 logging.warning(f"Found unclosed tag {tag} in translation: {tag}")
                 last_line.text = last_line.text[: match.start()]
                 break

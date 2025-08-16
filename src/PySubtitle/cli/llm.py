@@ -25,6 +25,12 @@ def main():
     parser.add_argument(
         "--systemmessages", action="store_true", help="Indicates that the endpoint supports system messages in chat requests"
     )
+    parser.add_argument(
+        "--timeout",
+        type=float,
+        default=None,
+        help="Request timeout in seconds for server calls (defaults to 300)",
+    )
     args = parser.parse_args()
 
     InitLogger("llm-subtrans", args.debug)
@@ -33,11 +39,12 @@ def main():
         options: Options = CreateOptions(
             args,
             provider,
-            server=args.server,
+            server_address=args.server,
             endpoint=args.endpoint,
             model=args.model,
-            chat=args.chat,
-            system_messages=args.systemmessages,
+            supports_conversation=args.chat,
+            supports_system_messages=args.systemmessages,
+            timeout=args.timeout,
         )
 
         # Create a project for the translation
