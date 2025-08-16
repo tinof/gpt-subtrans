@@ -50,7 +50,7 @@ else:
                             "max_instruct_tokens", int(os.getenv("MAX_INSTRUCT_TOKENS", 2048))
                         ),
                         "use_httpx": settings.get("use_httpx", os.getenv("OPENAI_USE_HTTPX", "False") == "True"),
-                        "reasoning_effort": settings.get("reasoning_effort", os.getenv("OPENAI_REASONING_EFFORT", "low")),
+                        "reasoning_effort": settings.get("reasoning_effort", os.getenv("OPENAI_REASONING_EFFORT", "medium")),
                     },
                 )
 

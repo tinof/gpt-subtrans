@@ -25,7 +25,7 @@ class OpenAIReasoningClient(OpenAIClient):
 
     @property
     def reasoning_effort(self):
-        return self.settings.get("reasoning_effort", "low")
+        return self.settings.get("reasoning_effort", "medium")
 
     def _send_messages(self, prompt: TranslationPrompt, temperature):
         """
