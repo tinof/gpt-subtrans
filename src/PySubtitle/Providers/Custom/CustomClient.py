@@ -19,7 +19,7 @@ class CustomClient(TranslationClient):
     def __init__(self, settings: dict):
         super().__init__(settings)
         self.client = None
-        self.headers = {"Content-Type": "application/json"}
+        self.headers = {"Content-Type": "application/json", "Accept": "application/json"}
         if self.api_key:
             self.headers["Authorization"] = f"Bearer {self.api_key}"
 
@@ -77,7 +77,7 @@ class CustomClient(TranslationClient):
         """
         response = {}
 
-        for retry in range(self.max_retries + 1):
+        for retry in range(int(self.max_retries) + 1):
             if self.aborted:
                 return None
 
@@ -88,7 +88,11 @@ class CustomClient(TranslationClient):
                 # Allow configurable timeout (seconds) via settings; default to 300s
                 timeout = self.settings.get("timeout", 300.0)
                 self.client = httpx.Client(
-                    base_url=self.server_address, follow_redirects=True, timeout=timeout, headers=self.headers
+                    base_url=self.server_address,
+                    follow_redirects=True,
+                    timeout=timeout,
+                    headers=self.headers,
+                    verify=self.settings.get("verify_ssl", True),
                 )
 
                 result: httpx.Response = self.client.post(self.endpoint, json=request_body)
@@ -135,9 +139,9 @@ class CustomClient(TranslationClient):
                 # Return the response if the API call succeeds
                 return response
 
-            except httpx.ConnectError:
+            except httpx.ConnectError as e:
                 if not self.aborted:
-                    logging.error(f"Failed to connect to server at {self.server_address}{self.endpoint}")
+                    logging.error(f"Failed to connect to server at {self.server_address}{self.endpoint}: {e}")
 
             except httpx.NetworkError as e:
                 if not self.aborted:
